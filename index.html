@@ -403,6 +403,22 @@ function route(action, p) {
         backend('log', { type: p.room, date: it.date, title: it.title + (it.htmlId ? ' [HTML]' : ''), body: it.body, link: it.link }).catch(function () {});
         return { ok: true };
       });
+    case 'updateItem':
+      var uref = db.ref('rooms/' + p.room + '/' + p.seq);
+      return uref.once('value').then(function (s) {
+        var old = s.val(); if (!old) throw new Error('자료를 찾을 수 없어요.');
+        var upd = { date: String(p.date || old.date || todayStr()), title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 3000), link: safe(p.link) }, tasks = [];
+        if (p.html) {
+          if (String(p.html).length > 4000000) throw new Error('HTML 파일이 너무 커요. 4MB 이하로 올려 주세요.');
+          var nr = db.ref('htmlfiles').push(); upd.htmlId = nr.key; upd.htmlName = String(p.htmlName || 'HTML 자료').slice(0, 100);
+          tasks.push(nr.set({ name: upd.htmlName, html: String(p.html) }));
+          if (old.htmlId) tasks.push(db.ref('htmlfiles/' + old.htmlId).remove());
+        } else if (p.removeHtml && old.htmlId) {
+          upd.htmlId = null; upd.htmlName = null; tasks.push(db.ref('htmlfiles/' + old.htmlId).remove());
+        }
+        tasks.push(uref.update(upd));
+        return Promise.all(tasks);
+      }).then(function () { return { ok: true }; });
     case 'getHtml':
       return db.ref('htmlfiles/' + p.id).once('value').then(function (s) {
         var v = s.val(); if (!v || !v.html) throw new Error('파일을 찾을 수 없어요.');
@@ -541,31 +557,38 @@ function boardView(room, label) {
       return '<div class="card"><h4>' + esc(i.title) + ' <small>' + esc(i.date) + '</small></h4><p>' + esc(i.body) + '</p>' +
         (safe(i.link) ? '<a href="' + esc(safe(i.link)) + '" target="_blank" rel="noopener">' + ic('link', 16) + ' 바로가기</a> ' : '') +
         (i.htmlId ? '<button class="btn sub" data-html="' + esc(i.htmlId) + '" data-name="' + esc(i.htmlName || i.title) + '">' + ic('code', 16) + ' ' + esc(i.htmlName || 'HTML 열기') + '</button>' : '') +
-        (S.token ? ' <button class="btn sub" data-del="' + esc(i.seq) + '">삭제</button>' : '') + '</div>';
+        (S.token ? ' <button class="btn sub" data-edit="' + esc(i.seq) + '">' + ic('pen', 16) + ' 수정</button> <button class="btn sub" data-del="' + esc(i.seq) + '">삭제</button>' : '') + '</div>';
     }).join('') || '<p class="msg">아직 올라온 자료가 없어요. 곧 채워질 예정이에요!</p>';
     $('#view').innerHTML = vhead(esc(label.trim()), S.token ? '<button class="btn" id="add">' + ic('plus', 18) + '자료 올리기</button>' : '') + '<div class="panel">' + h + '</div>';
-    $('#view').onclick = function (e) {
-      var o = e.target.closest('[data-html]'); if (o) { openHtml(o.dataset.html, o.dataset.name); return; }
-      var d = e.target.closest('[data-del]'); if (d && S.token && confirm('삭제할까요?')) api('deleteItem', { room: room, seq: d.dataset.del }).then(function () { boardView(room, label); });
-    };
-    if (S.token) {
-      $('#add').onclick = function () {
-        var m = modal('<h3>자료 올리기</h3><label>제목</label><input id="it"><label>날짜</label><input id="id" type="date"><label>내용</label><textarea id="ib" rows="4"></textarea>' +
-          '<label>웹 주소 (선택)</label><input id="il" placeholder="https://">' +
-          '<label>HTML 파일 (선택, 4MB 이하)</label><input id="if" type="file" accept=".html,.htm,text/html"><div style="color:var(--muted);font-size:.9rem;margin:-6px 0 10px">웹 주소와 HTML 파일을 함께 올릴 수도 있어요.</div>' +
-          '<div id="ie" class="msg"></div><button class="btn" id="is" style="width:100%">저장</button>');
-        $('#is', m).onclick = function () {
-          var btn = this, f = $('#if', m).files[0], rd = Promise.resolve({});
-          if (f) {
-            if (f.size > 4 * 1024 * 1024) { msg($('#ie', m), 'HTML 파일이 너무 커요. 4MB 이하로 올려 주세요.'); return; }
-            rd = new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res({ html: fr.result, htmlName: f.name }); }; fr.onerror = function () { rej(new Error('파일을 읽지 못했어요.')); }; fr.readAsText(f, 'utf-8'); });
-          }
-          btn.disabled = true; msg($('#ie', m), f ? '파일을 올리는 중…' : '저장 중…', true);
-          rd.then(function (x) { return api('saveItem', Object.assign({ room: room, title: $('#it', m).value, date: $('#id', m).value, body: $('#ib', m).value, link: $('#il', m).value }, x)); })
-            .then(function () { m.remove(); boardView(room, label); }).catch(function (e) { msg($('#ie', m), e.message); btn.disabled = false; });
-        };
+    function itemModal(ex) {
+      ex = ex || null;
+      var m = modal('<h3>' + (ex ? '자료 수정' : '자료 올리기') + '</h3><label>제목</label><input id="it" value="' + esc(ex && ex.title) + '"><label>날짜</label><input id="id" type="date" value="' + esc(ex && ex.date) + '"><label>내용</label><textarea id="ib" rows="4">' + esc(ex && ex.body) + '</textarea>' +
+        '<label>웹 주소 (선택)</label><input id="il" placeholder="https://" value="' + esc(ex && ex.link) + '">' +
+        '<label>HTML 파일 (선택, 4MB 이하)</label>' +
+        (ex && ex.htmlId ? '<div style="margin:2px 0 8px">현재 파일: <b>' + esc(ex.htmlName || 'HTML 자료') + '</b> <label style="margin-left:10px"><input id="rmh" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">파일 삭제</label></div>' : '') +
+        '<input id="if" type="file" accept=".html,.htm,text/html"><div style="color:var(--muted);font-size:.9rem;margin:-6px 0 10px">' + (ex && ex.htmlId ? '새 파일을 고르면 현재 파일이 바뀌어요. ' : '') + '웹 주소와 HTML 파일을 함께 올릴 수도 있어요.</div>' +
+        '<div id="ie" class="msg"></div><button class="btn" id="is" style="width:100%">저장</button>');
+      $('#is', m).onclick = function () {
+        var btn = this, f = $('#if', m).files[0], rd = Promise.resolve({});
+        if (f) {
+          if (f.size > 4 * 1024 * 1024) { msg($('#ie', m), 'HTML 파일이 너무 커요. 4MB 이하로 올려 주세요.'); return; }
+          rd = new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res({ html: fr.result, htmlName: f.name }); }; fr.onerror = function () { rej(new Error('파일을 읽지 못했어요.')); }; fr.readAsText(f, 'utf-8'); });
+        }
+        btn.disabled = true; msg($('#ie', m), f ? '파일을 올리는 중…' : '저장 중…', true);
+        rd.then(function (x) {
+          var base = { room: room, title: $('#it', m).value, date: $('#id', m).value, body: $('#ib', m).value, link: $('#il', m).value };
+          if (ex) { base.seq = ex.seq; base.removeHtml = !!($('#rmh', m) && $('#rmh', m).checked); }
+          return api(ex ? 'updateItem' : 'saveItem', Object.assign(base, x));
+        }).then(function () { m.remove(); boardView(room, label); }).catch(function (e) { msg($('#ie', m), e.message); btn.disabled = false; });
       };
     }
+    $('#view').onclick = function (e) {
+      var o = e.target.closest('[data-html]'); if (o) { openHtml(o.dataset.html, o.dataset.name); return; }
+      if (!S.token) return;
+      var ed = e.target.closest('[data-edit]'); if (ed) { itemModal(r.items.filter(function (x) { return x.seq === ed.dataset.edit; })[0]); return; }
+      var d = e.target.closest('[data-del]'); if (d && confirm('삭제할까요?')) api('deleteItem', { room: room, seq: d.dataset.del }).then(function () { boardView(room, label); });
+    };
+    if (S.token) $('#add').onclick = function () { itemModal(null); };
   }).catch(function (e) { $('#view').innerHTML = vhead('') + '<div class="panel"><div class="msg err">' + esc(e.message) + '</div></div>'; });
 }
 
