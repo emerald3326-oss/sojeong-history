@@ -557,7 +557,7 @@ function lessonView(date, slot) {
     var dd = date.split('-'), ttl = Number(dd[1]) + '월 ' + Number(dd[2]) + '일' + (L.title ? ' · ' + esc(L.title) : '');
     var tabs = [1, 2].map(function (n) { return '<button class="chip' + (n === slot ? ' on' : '') + '" data-tab="' + n + '">' + ic('book', 18) + '수업 ' + n + (r.slots[n] ? '' : '<small style="opacity:.6">·비어 있음</small>') + '</button>'; }).join('');
     $('#view').innerHTML = vhead(ttl, '<span class="tabs">' + tabs + '</span>' + (S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' : ''), '달력', 'bk') +
-      (L.body ? '<p class="lead" style="white-space:pre-wrap;color:var(--muted)">' + esc(L.body) + '</p>' : '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업 ' + slot + '이 없어요.') + '</p>') +
+      '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업 ' + slot + '이 없어요.') + '</p>' +
       '<div class="secs">' +
       sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', (L.introText ? '<div class="introtext">' + esc(L.introText) + '</div>' : '') + tile(k.intro, 'play', '수업 들어가기', 't-sky') + '<div class="tilerow">' + pvTile() + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
       sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
@@ -570,7 +570,7 @@ function lessonView(date, slot) {
     document.querySelectorAll('[data-wh]').forEach(function (b) { b.onclick = function () { openHtml(b.dataset.wh, b.dataset.name); }; });
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { lessonView(date, Number(b.dataset.tab)); }; });
     if (S.token) $('#ed').onclick = function () {
-      var m = modal('<h3>' + esc(date) + ' 수업 ' + slot + ' 등록</h3><label>제목</label><input id="lt" value="' + esc(L.title) + '"><label>안내 글(선택)</label><textarea id="lb" rows="3">' + esc(L.body) + '</textarea>' +
+      var m = modal('<h3>' + esc(date) + ' 수업 ' + slot + ' 등록</h3><label>제목</label><input id="lt" value="' + esc(L.title) + '">' +
         ['intro|수업 들어가기 링크', 'summary|내용 정리 링크', 'worksheet|학습지', 'activity|수업 활동 링크'].map(function (x) {
           var a = x.split('|'), kind = a[0];
           function fileField(label, legacy) {
@@ -602,7 +602,7 @@ function lessonView(date, slot) {
         }
         btn.disabled = true; msg($('#le', m), reads.length ? '파일을 올리는 중…' : '저장 중…', true);
         Promise.all(reads).then(function () {
-          return api('saveLesson', { date: date, slot: slot, title: $('#lt', m).value, body: $('#lb', m).value, introText: $('#l_introText', m).value, previewText: $('#l_previewText', m).value, files: files,
+          return api('saveLesson', { date: date, slot: slot, title: $('#lt', m).value, body: '', introText: $('#l_introText', m).value, previewText: $('#l_previewText', m).value, files: files,
             links: { intro: $('#l_intro', m).value, video: $('#l_video', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } });
         }).then(function () { m.remove(); lessonView(date, slot); }).catch(function (e) { msg($('#le', m), e.message); btn.disabled = false; });
       };
