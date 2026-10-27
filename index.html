@@ -5,18 +5,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>유쾌한 소정샘의 역사 Class</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
 <style>
+@font-face{font-family:'CheonsaengYeonbun';src:url('fonts/cheonsaeng-yeonbun.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'OmyuPretty';src:url('fonts/omyu-pretty.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'HUSummersea';src:url('fonts/hu-summersea.woff2') format('woff2');font-weight:100 900;font-display:swap}
 :root{--paper:#F6F2EA;--surface:#fff;--line:#E6DFD2;--ink:#1E2A3A;--muted:#6A7383;
 --primary:#2F6B62;--primary-soft:#E3EFEB;--primary-deep:#1F4B45;--accent:#E0663F;--accent-soft:#FBE7DE;
 --sky:#DCEBF5;--sky-deep:#3C6E94;--plum:#EAE4F3;--plum-deep:#6B5B95;--gold:#F7ECD3;--gold-deep:#B07F1E;--slate:#E7EAEE;--slate-deep:#475467;
 --ok:#2F6B62;--bad:#C2410C;--shadow-card:0 4px 16px rgba(30,42,58,.08);--shadow-lift:0 12px 32px -4px rgba(30,42,58,.14);
---serif:'Noto Serif KR','Batang',serif}
+--f-title:'CheonsaengYeonbun','Noto Serif KR',serif;--f-label:'OmyuPretty','HUSummersea',sans-serif;--f-body:'HUSummersea','Noto Sans KR','Malgun Gothic',sans-serif;--serif:var(--f-body)}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;font-size:18px;line-height:1.55;color:var(--ink);background:var(--paper);min-height:100vh;padding-bottom:110px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:var(--f-body);font-size:20px;line-height:1.55;color:var(--ink);background:var(--paper);min-height:100vh;padding-bottom:110px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 body[data-s="entry"],body[data-s="home"]{background:linear-gradient(#CFE3F1,#F6F2EA 75%)}
 body[data-s="entry"]::before,body[data-s="home"]::before{content:'';position:fixed;left:0;right:0;bottom:0;height:23vh;background:#CFDCC8;z-index:-1}
 button{font:inherit;color:inherit;cursor:pointer;min-height:48px;-webkit-user-select:none;user-select:none}
@@ -27,7 +27,7 @@ svg.ic{flex:none;vertical-align:middle}
 header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 32px;position:sticky;top:0;z-index:20}
 .brand{display:flex;align-items:center;gap:12px}
 .logo{width:40px;height:40px;border-radius:12px;background:var(--primary);color:#fff;display:grid;place-items:center}
-header.top h1{margin:0;font:700 1.25rem/1.3 var(--serif)}
+header.top h1{margin:0;font:400 1.7rem/1.3 var(--f-title)}
 .acts{display:flex;gap:10px;align-items:center}
 .chip{display:inline-flex;align-items:center;gap:8px;border:0;background:var(--surface);border-radius:999px;padding:10px 20px;font-weight:500;box-shadow:var(--shadow-card);color:var(--ink);text-decoration:none;min-height:48px}
 .chip.soft{background:var(--primary-soft);color:var(--primary-deep);box-shadow:none}
@@ -36,7 +36,7 @@ body.teacher .wrap{padding-left:132px;padding-right:132px}
 
 /* 입장 */
 #entry{text-align:center}
-#entry h2{margin:8px 0 6px;font:700 2.75rem/1.25 var(--serif)}
+#entry h2{margin:8px 0 6px;font:400 3.4rem/1.2 var(--f-title)}
 .hint{margin:0 0 4px;color:var(--muted)}
 #houseSvg{width:min(480px,80vw,50vh);cursor:pointer;display:block;margin:14px auto 0;transition:transform .2s}
 #houseSvg:active{transform:scale(.99)}
@@ -51,8 +51,8 @@ body.teacher .wrap{padding-left:132px;padding-right:132px}
 .room{border:0;border-radius:22px;padding:22px 10px;min-height:200px;background:var(--tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .15s}
 .room:active{transform:scale(.97)}
 .room .badge{width:68px;height:68px;border-radius:50%;background:#fff;color:var(--deep);display:grid;place-items:center;margin-bottom:8px}
-.room b{font-size:1.25rem;font-weight:700}
-.room small{font-size:.875rem;color:var(--muted)}
+.room b{font-family:var(--f-label);font-size:1.65rem;font-weight:400}
+.room small{font-size:1rem;color:var(--muted)}
 .t-sky{--tint:var(--sky);--deep:var(--sky-deep)}.t-green{--tint:var(--primary-soft);--deep:var(--primary)}
 .t-plum{--tint:var(--plum);--deep:var(--plum-deep)}.t-gold{--tint:var(--gold);--deep:var(--gold-deep)}
 .t-coral{--tint:var(--accent-soft);--deep:var(--accent)}.t-slate{--tint:var(--slate);--deep:var(--slate-deep)}
@@ -67,7 +67,7 @@ body.teacher .wrap{padding-left:132px;padding-right:132px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--primary);color:#fff;border:0;border-radius:999px;padding:14px 28px;font-weight:500}
 .btn.sub{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-card)}
 .btn:disabled{opacity:.5}
-input,textarea,select{font:inherit;font-size:18px;width:100%;padding:14px 16px;border:1.5px solid var(--line);background:var(--paper);border-radius:14px;margin:6px 0 12px;color:var(--ink)}
+input,textarea,select{font:inherit;font-size:20px;width:100%;padding:14px 16px;border:1.5px solid var(--line);background:var(--paper);border-radius:14px;margin:6px 0 12px;color:var(--ink)}
 textarea{resize:none}
 input:focus,textarea:focus{outline:2px solid var(--primary);outline-offset:1px;background:#fff}
 label{font-weight:500;font-size:.95rem}
@@ -86,7 +86,7 @@ label{font-weight:500;font-size:.95rem}
 .cal .d b{font-weight:700}
 .cal .d.has{background:var(--primary-soft)}
 .cal .d.today{box-shadow:inset 0 0 0 2.5px var(--accent)}
-.cal .d small{display:block;font-size:.75rem;line-height:1.3;color:var(--primary-deep)}
+.cal .d small{display:block;font-size:.85rem;line-height:1.3;color:var(--primary-deep)}
 .cal .d.empty{visibility:hidden}
 
 /* 수업 화면 */
@@ -95,19 +95,19 @@ label{font-weight:500;font-size:.95rem}
 .secard .sh{display:flex;align-items:center;gap:12px}
 .secard .num{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-weight:700}
 .secard h3{margin:0;font:700 1.625rem/1.3 var(--serif)}
-.secard p{margin:0;font-size:.875rem;color:var(--muted)}
-.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:132px;border-radius:22px;background:var(--tint);color:var(--ink);text-decoration:none;font-weight:700;font-size:1.25rem;transition:transform .15s}
+.secard p{margin:0;font-size:.95rem;color:var(--muted)}
+.tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:132px;border-radius:22px;background:var(--tint);color:var(--ink);text-decoration:none;font-family:var(--f-label);font-weight:400;font-size:1.6rem;transition:transform .15s}
 .tile:active{transform:scale(.97)}
 .tile .badge{width:56px;height:56px;border-radius:50%;background:#fff;color:var(--deep);display:grid;place-items:center}
 .tile.off{opacity:.45;pointer-events:none}
-.tile small{font-weight:400;font-size:.8rem;color:var(--muted);margin-top:-6px}
+.tile small{font-family:var(--f-body);font-weight:400;font-size:.8rem;color:var(--muted);margin-top:-6px}
 
 /* AI / 보고서 */
 .ai{display:grid;grid-template-columns:minmax(0,480px) minmax(0,1fr);gap:24px;align-items:start}
 .ai .panel{margin-top:0}
 .aihead{display:flex;align-items:center;gap:12px;margin-bottom:6px}
 .aihead .b{width:44px;height:44px;border-radius:14px;background:var(--plum);color:var(--plum-deep);display:grid;place-items:center}
-.aihead h2{margin:0;font:700 1.375rem/1.3 'Noto Sans KR',sans-serif}
+.aihead h2{margin:0;font:700 1.375rem/1.3 var(--f-body)}
 .drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:120px;border:1.5px dashed var(--plum-deep);border-radius:18px;background:var(--plum);color:var(--plum-deep);font-weight:500;cursor:pointer;margin:0 0 14px}
 .drop input{display:none}
 #preview{max-width:100%;max-height:200px;border-radius:14px;margin:0 0 14px;display:block}
@@ -120,21 +120,21 @@ label{font-weight:500;font-size:.95rem}
 
 /* 하단 링크바 */
 .bottom{position:fixed;left:0;right:0;bottom:24px;display:flex;justify-content:center;flex-wrap:wrap;gap:12px;padding:0 16px;z-index:20;pointer-events:none}
-.bottom a{pointer-events:auto;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-weight:500;border-radius:999px;padding:13px 22px;background:var(--surface);box-shadow:var(--shadow-card);min-height:48px}
+.bottom a{pointer-events:auto;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);font-family:var(--f-label);font-size:1.25rem;font-weight:400;border-radius:999px;padding:13px 22px;background:var(--surface);box-shadow:var(--shadow-card);min-height:48px}
 .bottom a .ic{color:var(--primary)}
 
 /* 우측 도구 */
 #dock{position:fixed;right:28px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--surface);border-radius:28px;box-shadow:var(--shadow-lift);z-index:25}
 #dock button,#dock a{width:76px;height:76px;border-radius:20px;border:0;text-decoration:none;background:var(--primary-soft);color:var(--primary);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0}
-#dock button small,#dock a small{font-size:.8rem;font-weight:500;color:var(--primary-deep);white-space:nowrap}
+#dock button small,#dock a small{font-family:var(--f-label);font-size:1.05rem;font-weight:400;color:var(--primary-deep);white-space:nowrap}
 #dock button.on{background:var(--primary);color:#fff}#dock button.on small{color:#fff}
 #tool{position:fixed;right:132px;top:50%;transform:translateY(-50%);width:min(380px,calc(100vw - 170px));max-height:80vh;overflow:auto;z-index:25;background:var(--surface);border-radius:24px;padding:22px;box-shadow:var(--shadow-lift)}
-#tool h3{margin:0 0 8px;font:700 1.25rem/1.3 'Noto Sans KR',sans-serif}
+#tool h3{margin:0 0 8px;font:700 1.25rem/1.3 var(--f-body)}
 .big{font:700 3.4rem/1.2 var(--serif);text-align:center;margin:10px 0}
 
 .modal{position:fixed;inset:0;background:rgba(30,42,58,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .modal .box{background:var(--surface);border-radius:28px;padding:28px;width:min(440px,100%);max-height:90vh;overflow:auto;box-shadow:var(--shadow-lift)}
-.modal h3{margin:0 0 10px;font:700 1.375rem/1.3 'Noto Sans KR',sans-serif}
+.modal h3{margin:0 0 10px;font:700 1.375rem/1.3 var(--f-body)}
 @media(max-width:900px){.secs,.ai{grid-template-columns:1fr}#entry h2{font-size:2rem}.rooms{grid-template-columns:repeat(2,1fr)}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -178,7 +178,7 @@ label{font-weight:500;font-size:.95rem}
   <section id="home" class="hidden">
     <div class="house">
       <div class="chimney"></div>
-      <svg class="roof" viewBox="0 0 848 120" preserveAspectRatio="none"><polygon points="424,4 848,120 0,120" fill="#2F6B62"/><polygon points="424,38 802,120 46,120" fill="#1F4B45"/><text x="424" y="96" text-anchor="middle" font-size="22" font-weight="700" fill="#fff" font-family="Noto Sans KR,sans-serif">오늘은 어느 방으로 갈까요?</text></svg>
+      <svg class="roof" viewBox="0 0 848 120" preserveAspectRatio="none"><polygon points="424,4 848,120 0,120" fill="#2F6B62"/><polygon points="424,38 802,120 46,120" fill="#1F4B45"/><text x="424" y="96" text-anchor="middle" font-size="22" fill="#fff" style="font-family:var(--f-body)">오늘은 어느 방으로 갈까요?</text></svg>
       <div class="eave"></div>
       <div class="rooms" id="rooms"></div>
     </div>
