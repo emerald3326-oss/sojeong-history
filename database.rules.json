@@ -17,6 +17,13 @@
         ".write": "auth != null && auth.uid === $uid",
         ".validate": "newData.hasChildren(['name', 't']) && newData.child('name').isString() && newData.child('name').val().length >= 1 && newData.child('name').val().length <= 20"
       }
+    },
+    "htmlfiles": {
+      ".write": "auth != null && auth.token.email == 'teacher@sojeong.kr'",
+      "$id": {
+        ".read": true,
+        ".validate": "newData.hasChildren(['name', 'html']) && newData.child('name').isString() && newData.child('name').val().length < 200 && newData.child('html').isString() && newData.child('html').val().length < 4500000"
+      }
     }
   }
 }
