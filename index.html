@@ -134,7 +134,6 @@ label{font-weight:700;font-size:.9rem}
 <div id="dock" class="hidden">
   <button data-tool="pick">🎯<small>발표자</small></button>
   <button data-tool="timer">⏱️<small>타이머</small></button>
-  <button data-tool="hands">✋<small>손들기</small></button>
   <button data-tool="bgm" id="bgmBtn">🎵<small>배경음악</small></button>
 </div>
 <div id="tool" class="hidden"></div>
@@ -417,13 +416,13 @@ $('#btnLogin').onclick = function () {
   };
   $('#pb', m).onclick = go; $('#pw', m).onkeydown = function (e) { if (e.key === 'Enter') go(); }; $('#pw', m).focus();
 };
-function closeTool() { $('#tool').classList.add('hidden'); S.tool = ''; clearInterval(S.handTimer); document.querySelectorAll('#dock button').forEach(function (b) { b.classList.remove('on'); }); }
+function closeTool() { $('#tool').classList.add('hidden'); S.tool = ''; document.querySelectorAll('#dock button').forEach(function (b) { b.classList.remove('on'); }); }
 $('#dock').onclick = function (e) {
   var b = e.target.closest('button'); if (!b) return; var t = b.dataset.tool;
   if (t === 'bgm') return toggleBgm();
   if (S.tool === t) return closeTool();
   closeTool(); S.tool = t; b.classList.add('on'); $('#tool').classList.remove('hidden');
-  ({ pick: pickTool, timer: timerTool, hands: handsTool })[t]();
+  ({ pick: pickTool, timer: timerTool })[t]();
 };
 
 function pickTool() {
@@ -450,16 +449,6 @@ function timerTool() {
   $('#t1').onclick = function () { if (run) return; if (!left) reset(); run = true; clearInterval(S.timerId); S.timerId = setInterval(function () { left--; draw(); if (left <= 0) { clearInterval(S.timerId); run = false; beep(); $('#tt').textContent = '⏰ 끝!'; } }, 1000); };
   $('#t2').onclick = function () { clearInterval(S.timerId); run = false; };
   $('#t3').onclick = reset;
-}
-function handsTool() {
-  $('#tool').innerHTML = '<h3>✋ 손든 학생</h3><div id="hl">불러오는 중…</div><button class="btn sub" id="hc" style="width:100%;margin-top:8px">모두 지우기</button>';
-  var load = function () {
-    api('getHands').then(function (r) {
-      $('#hl').innerHTML = r.hands.map(function (h) { return '<div class="hand"><b>' + esc(h.name) + '</b><span>' + esc(h.cls) + ' ' + esc(h.no) + '번 · ' + esc(h.time) + '</span></div>'; }).join('') || '<p class="msg">손든 학생이 없어요.</p>';
-    }).catch(function (e) { $('#hl').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; });
-  };
-  load(); S.handTimer = setInterval(load, 6000);
-  $('#hc').onclick = function () { api('clearHands').then(load); };
 }
 function toggleBgm() {
   var h = $('#bgmHolder'), f = h.querySelector('iframe');
