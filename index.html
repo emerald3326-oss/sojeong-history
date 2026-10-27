@@ -547,10 +547,13 @@ function lessonView(date, slot) {
     function pvTile() {
       return L.previewText ? '<button class="tile t-plum" data-pv="1"><span class="badge">' + ic('eye', 28) + '</span>수업 미리보기</button>' : '<div class="tile off t-plum"><span class="badge">' + ic('eye', 28) + '</span>수업 미리보기<small>준비 중</small></div>';
     }
-    function tiles2(kind, ico, label, tone, link) {
+    function txtTile(kind, ico, label, tone) {
+      return L[kind + 'Text'] ? '<button class="tile ' + tone + '" data-txt="' + kind + '"><span class="badge">' + ic(ico, 28) + '</span>' + label + '</button>' : '';
+    }
+    function tiles2(kind, ico, label, tone, link, hasText) {
       var h = L[kind + 'Html'], out = '';
       if (h) out += '<button class="tile ' + tone + '" data-wh="' + esc(h.id) + '" data-name="' + esc(h.name) + '"><span class="badge">' + ic(ico, 28) + '</span>' + (link ? label + ' (HTML)' : label) + '</button>';
-      if (link || !h) out += tile(link, ico, label, tone);
+      if (link || (!h && !hasText)) out += tile(link, ico, label, tone);
       return out;
     }
     function sec(n, name, desc, tiles) { return '<div class="secard"><div class="sh"><span class="num">' + n + '</span><h3>' + name + '</h3></div><p>' + desc + '</p>' + tiles + '</div>'; }
@@ -560,13 +563,16 @@ function lessonView(date, slot) {
       '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업 ' + slot + '이 없어요.') + '</p>' +
       '<div class="secs">' +
       sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', '<div class="tilerow">' + pvTile() + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
-      sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', (L.summaryText ? '<div class="introtext">' + esc(L.summaryText) + '</div>' : '') + tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
-      sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', (L.activityText ? '<div class="introtext">' + esc(L.activityText) + '</div>' : '') + tiles2('activity', 'target', '수업 활동', 't-coral', k.activity)) + '</div>';
+      sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', txtTile('summary', 'book', '내용 정리 보기', 't-green') + tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary, !!L.summaryText) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
+      sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', txtTile('activity', 'target', '활동 내용 보기', 't-coral') + tiles2('activity', 'target', '수업 활동', 't-coral', k.activity, !!L.activityText)) + '</div>';
     $('#bk').onclick = function () { calendarView(S.ym); };
-    document.querySelectorAll('[data-pv]').forEach(function (b) { b.onclick = function () {
-      var m = modal('<h3>수업 미리보기</h3><div class="readtext">' + esc(L.previewText) + '</div><button class="btn" style="width:100%;margin-top:14px">닫기</button>');
+    function showText(title, text) {
+      var m = modal('<h3></h3><div class="readtext"></div><button class="btn" style="width:100%;margin-top:14px">닫기</button>');
+      m.querySelector('h3').textContent = title; m.querySelector('.readtext').textContent = text;
       m.querySelector('.box').style.width = 'min(720px,100%)'; m.querySelector('.btn').onclick = function () { m.remove(); };
-    }; });
+    }
+    document.querySelectorAll('[data-pv]').forEach(function (b) { b.onclick = function () { showText('수업 미리보기', L.previewText); }; });
+    document.querySelectorAll('[data-txt]').forEach(function (b) { b.onclick = function () { var kd = b.dataset.txt; showText(kd === 'summary' ? '내용 정리' : '수업 활동', L[kd + 'Text']); }; });
     document.querySelectorAll('[data-wh]').forEach(function (b) { b.onclick = function () { openHtml(b.dataset.wh, b.dataset.name); }; });
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { lessonView(date, Number(b.dataset.tab)); }; });
     if (S.token) $('#ed').onclick = function () {
