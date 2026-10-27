@@ -113,6 +113,7 @@ label{font-weight:500;font-size:.95rem}
 .tile:active{transform:scale(.97)}
 .tile .badge{width:56px;height:56px;border-radius:50%;background:#fff;color:var(--deep);display:grid;place-items:center}
 .tile.off{opacity:.45;pointer-events:none}
+.readtext{white-space:pre-wrap;line-height:1.8;font-size:1.15rem;background:var(--paper);border-radius:16px;padding:18px 20px;max-height:60vh;overflow:auto;word-break:keep-all}
 .tilerow{display:grid;gap:10px}
 .tilerow .tile{flex-direction:row;justify-content:flex-start;min-height:80px;font-size:1.3rem;gap:14px;padding:0 20px}
 .tilerow .tile .badge{width:46px;height:46px;flex:none}
@@ -385,8 +386,8 @@ function route(action, p) {
       });
     case 'saveLesson':
       var slot = Number(p.slot) === 2 ? 2 : 1;
-      var L = p.links || {}, links = { intro: safe(L.intro), preview: safe(L.preview), video: safe(L.video), summary: safe(L.summary), worksheet: '', activity: safe(L.activity) };
-      var les = { date: p.date, slot: slot, title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 2000), introText: String(p.introText || '').slice(0, 1500), links: links };
+      var L = p.links || {}, links = { intro: safe(L.intro), video: safe(L.video), summary: safe(L.summary), worksheet: '', activity: safe(L.activity) };
+      var les = { date: p.date, slot: slot, title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 2000), introText: String(p.introText || '').slice(0, 1500), previewText: String(p.previewText || '').slice(0, 3000), links: links };
       return db.ref('lessons/' + p.date).once('value').then(function (s) {
         var upd = slotsOf(s.val()), old = upd[slot] || null, tasks = [], F = p.files || {};
         upd = { 1: upd[1] || null, 2: upd[2] || null };
@@ -543,6 +544,9 @@ function lessonView(date, slot) {
   api('getLesson', { date: date, slot: slot }).then(function (r) {
     var L = r.lesson || { title: '', body: '', links: {} }, k = L.links || {};
     function tile(url, ico, t, tone) { return url ? '<a class="tile ' + tone + '" href="' + esc(safe(url)) + '" target="_blank" rel="noopener"><span class="badge">' + ic(ico, 28) + '</span>' + t + '</a>' : '<div class="tile off ' + tone + '"><span class="badge">' + ic(ico, 28) + '</span>' + t + '<small>준비 중</small></div>'; }
+    function pvTile() {
+      return L.previewText ? '<button class="tile t-plum" data-pv="1"><span class="badge">' + ic('eye', 28) + '</span>수업 미리보기</button>' : '<div class="tile off t-plum"><span class="badge">' + ic('eye', 28) + '</span>수업 미리보기<small>준비 중</small></div>';
+    }
     function tiles2(kind, ico, label, tone, link) {
       var h = L[kind + 'Html'], out = '';
       if (h) out += '<button class="tile ' + tone + '" data-wh="' + esc(h.id) + '" data-name="' + esc(h.name) + '"><span class="badge">' + ic(ico, 28) + '</span>' + (link ? label + ' (HTML)' : label) + '</button>';
@@ -555,10 +559,14 @@ function lessonView(date, slot) {
     $('#view').innerHTML = vhead(ttl, '<span class="tabs">' + tabs + '</span>' + (S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' : ''), '달력', 'bk') +
       (L.body ? '<p class="lead" style="white-space:pre-wrap;color:var(--muted)">' + esc(L.body) + '</p>' : '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업 ' + slot + '이 없어요.') + '</p>') +
       '<div class="secs">' +
-      sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', (L.introText ? '<div class="introtext">' + esc(L.introText) + '</div>' : '') + tile(k.intro, 'play', '수업 들어가기', 't-sky') + '<div class="tilerow">' + tile(k.preview, 'eye', '수업 미리보기', 't-plum') + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
+      sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', (L.introText ? '<div class="introtext">' + esc(L.introText) + '</div>' : '') + tile(k.intro, 'play', '수업 들어가기', 't-sky') + '<div class="tilerow">' + pvTile() + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
       sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
       sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', tiles2('activity', 'target', '수업 활동', 't-coral', k.activity)) + '</div>';
     $('#bk').onclick = function () { calendarView(S.ym); };
+    document.querySelectorAll('[data-pv]').forEach(function (b) { b.onclick = function () {
+      var m = modal('<h3>수업 미리보기</h3><div class="readtext">' + esc(L.previewText) + '</div><button class="btn" style="width:100%;margin-top:14px">닫기</button>');
+      m.querySelector('.box').style.width = 'min(720px,100%)'; m.querySelector('.btn').onclick = function () { m.remove(); };
+    }; });
     document.querySelectorAll('[data-wh]').forEach(function (b) { b.onclick = function () { openHtml(b.dataset.wh, b.dataset.name); }; });
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { lessonView(date, Number(b.dataset.tab)); }; });
     if (S.token) $('#ed').onclick = function () {
@@ -575,7 +583,7 @@ function lessonView(date, slot) {
           if (kind === 'worksheet') return fileField('학습지', k.worksheet);
           return '<label>' + a[1] + '</label><input id="l_' + kind + '" placeholder="https://" value="' + esc(k[kind]) + '">' +
             (kind === 'intro' ? '<label>수업 들어가기 내용 (선택)</label><textarea id="l_introText" rows="5" placeholder="수업에 들어가기 전에 학생들이 읽을 내용을 적어 주세요.">' + esc(L.introText) + '</textarea>' +
-              '<label>수업 미리보기 링크</label><input id="l_preview" placeholder="https://" value="' + esc(k.preview) + '"><label>수업 관련 영상 링크</label><input id="l_video" placeholder="https://" value="' + esc(k.video) + '">' : '') +
+              '<label>수업 미리보기 내용 (선택)</label><textarea id="l_previewText" rows="6" placeholder="학생들이 아이콘을 눌러 볼 수업 미리보기 내용을 적어 주세요.">' + esc(L.previewText) + '</textarea><label>수업 관련 영상 링크</label><input id="l_video" placeholder="https://" value="' + esc(k.video) + '">' : '') +
             (kind === 'summary' ? fileField('내용 정리', '') : kind === 'activity' ? fileField('수업 활동', '') : '');
         }).join('') +
         '<div id="le" class="msg"></div><button class="btn" id="ls" style="width:100%">저장</button>');
@@ -594,8 +602,8 @@ function lessonView(date, slot) {
         }
         btn.disabled = true; msg($('#le', m), reads.length ? '파일을 올리는 중…' : '저장 중…', true);
         Promise.all(reads).then(function () {
-          return api('saveLesson', { date: date, slot: slot, title: $('#lt', m).value, body: $('#lb', m).value, introText: $('#l_introText', m).value, files: files,
-            links: { intro: $('#l_intro', m).value, preview: $('#l_preview', m).value, video: $('#l_video', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } });
+          return api('saveLesson', { date: date, slot: slot, title: $('#lt', m).value, body: $('#lb', m).value, introText: $('#l_introText', m).value, previewText: $('#l_previewText', m).value, files: files,
+            links: { intro: $('#l_intro', m).value, video: $('#l_video', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } });
         }).then(function () { m.remove(); lessonView(date, slot); }).catch(function (e) { msg($('#le', m), e.message); btn.disabled = false; });
       };
     };
