@@ -8,12 +8,13 @@
 <style>
 @font-face{font-family:'CheonsaengYeonbun';src:url('fonts/cheonsaeng-yeonbun.woff2') format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'OmyuPretty';src:url('fonts/omyu-pretty.woff2') format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'SejongGeulggot';src:url('fonts/sejong-geulggot.woff2') format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'HUSummersea';src:url('fonts/hu-summersea.woff2') format('woff2');font-weight:100 900;font-display:swap}
 :root{--paper:#F6F2EA;--surface:#fff;--line:#E6DFD2;--ink:#1E2A3A;--muted:#6A7383;
 --primary:#2F6B62;--primary-soft:#E3EFEB;--primary-deep:#1F4B45;--accent:#E0663F;--accent-soft:#FBE7DE;
 --sky:#DCEBF5;--sky-deep:#3C6E94;--plum:#EAE4F3;--plum-deep:#6B5B95;--gold:#F7ECD3;--gold-deep:#B07F1E;--slate:#E7EAEE;--slate-deep:#475467;
 --ok:#2F6B62;--bad:#C2410C;--shadow-card:0 4px 16px rgba(30,42,58,.08);--shadow-lift:0 12px 32px -4px rgba(30,42,58,.14);
---f-title:'CheonsaengYeonbun','Noto Serif KR',serif;--f-label:'OmyuPretty','HUSummersea',sans-serif;--f-body:'HUSummersea','Noto Sans KR','Malgun Gothic',sans-serif;--serif:var(--f-body)}
+--f-title:'CheonsaengYeonbun','Noto Serif KR',serif;--f-intro:'SejongGeulggot','HUSummersea',serif;--f-label:'OmyuPretty','HUSummersea',sans-serif;--f-body:'HUSummersea','Noto Sans KR','Malgun Gothic',sans-serif;--serif:var(--f-body)}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;font-family:var(--f-body);font-size:20px;line-height:1.55;color:var(--ink);background:var(--paper);min-height:100vh;padding-bottom:110px;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
@@ -112,6 +113,7 @@ label{font-weight:500;font-size:.95rem}
 .tile:active{transform:scale(.97)}
 .tile .badge{width:56px;height:56px;border-radius:50%;background:#fff;color:var(--deep);display:grid;place-items:center}
 .tile.off{opacity:.45;pointer-events:none}
+.introtext{font-family:var(--f-intro);font-size:1.35rem;line-height:1.8;white-space:pre-wrap;background:var(--paper);border-radius:18px;padding:16px 18px;color:var(--ink);word-break:keep-all}
 button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
 .tile small{font-family:var(--f-body);font-weight:400;font-size:.8rem;color:var(--muted);margin-top:-6px}
 
@@ -378,7 +380,7 @@ function route(action, p) {
     case 'saveLesson':
       var slot = Number(p.slot) === 2 ? 2 : 1;
       var L = p.links || {}, links = { intro: safe(L.intro), summary: safe(L.summary), worksheet: '', activity: safe(L.activity) };
-      var les = { date: p.date, slot: slot, title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 2000), links: links };
+      var les = { date: p.date, slot: slot, title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 2000), introText: String(p.introText || '').slice(0, 1500), links: links };
       return db.ref('lessons/' + p.date).once('value').then(function (s) {
         var upd = slotsOf(s.val()), old = upd[slot] || null, tasks = [];
         upd = { 1: upd[1] || null, 2: upd[2] || null };
@@ -542,7 +544,7 @@ function lessonView(date, slot) {
     $('#view').innerHTML = vhead(ttl, '<span class="tabs">' + tabs + '</span>' + (S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' : ''), '달력', 'bk') +
       (L.body ? '<p class="lead" style="white-space:pre-wrap;color:var(--muted)">' + esc(L.body) + '</p>' : '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업 ' + slot + '이 없어요.') + '</p>') +
       '<div class="secs">' +
-      sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', tile(k.intro, 'play', '수업 들어가기', 't-sky')) +
+      sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', (L.introText ? '<div class="introtext">' + esc(L.introText) + '</div>' : '') + tile(k.intro, 'play', '수업 들어가기', 't-sky')) +
       sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', tile(k.summary, 'filetext', '내용 정리', 't-green') + wsTile()) +
       sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', tile(k.activity, 'target', '수업 활동', 't-coral')) + '</div>';
     $('#bk').onclick = function () { calendarView(S.ym); };
@@ -552,7 +554,8 @@ function lessonView(date, slot) {
       var m = modal('<h3>' + esc(date) + ' 수업 ' + slot + ' 등록</h3><label>제목</label><input id="lt" value="' + esc(L.title) + '"><label>안내 글(선택)</label><textarea id="lb" rows="3">' + esc(L.body) + '</textarea>' +
         ['intro|수업 들어가기 링크', 'summary|내용 정리 링크', 'worksheet|학습지', 'activity|수업 활동 링크'].map(function (x) {
           var a = x.split('|');
-          if (a[0] !== 'worksheet') return '<label>' + a[1] + '</label><input id="l_' + a[0] + '" placeholder="https://" value="' + esc(k[a[0]]) + '">';
+          if (a[0] !== 'worksheet') return '<label>' + a[1] + '</label><input id="l_' + a[0] + '" placeholder="https://" value="' + esc(k[a[0]]) + '">' +
+            (a[0] === 'intro' ? '<label>수업 들어가기 내용 (선택)</label><textarea id="l_introText" rows="5" placeholder="수업에 들어가기 전에 학생들이 읽을 내용을 적어 주세요.">' + esc(L.introText) + '</textarea>' : '');
           return '<label>학습지 (HTML 파일, 4MB 이하)</label>' +
             (L.worksheetHtml ? '<div style="margin:2px 0 8px">현재 파일: <b>' + esc(L.worksheetHtml.name) + '</b> <label style="margin-left:10px"><input id="rmw" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">파일 삭제</label></div>'
               : (k.worksheet ? '<div style="margin:2px 0 8px">기존 학습지 링크가 연결되어 있어요. <label style="margin-left:10px"><input id="rmw" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">링크 삭제</label></div>' : '')) +
@@ -567,7 +570,7 @@ function lessonView(date, slot) {
         }
         btn.disabled = true; msg($('#le', m), f ? '파일을 올리는 중…' : '저장 중…', true);
         rd.then(function (x) {
-          return api('saveLesson', Object.assign({ date: date, slot: slot, title: $('#lt', m).value, body: $('#lb', m).value, removeWorksheet: !!($('#rmw', m) && $('#rmw', m).checked),
+          return api('saveLesson', Object.assign({ date: date, slot: slot, title: $('#lt', m).value, body: $('#lb', m).value, removeWorksheet: !!($('#rmw', m) && $('#rmw', m).checked), introText: $('#l_introText', m).value,
             links: { intro: $('#l_intro', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } }, x));
         }).then(function () { m.remove(); lessonView(date, slot); }).catch(function (e) { msg($('#le', m), e.message); btn.disabled = false; });
       };
