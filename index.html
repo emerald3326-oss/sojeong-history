@@ -420,6 +420,7 @@ function vhead(title, extra, label, id) { return '<div class="vhead">' + backBtn
 /* ---------- 입장 ---------- */
 $('#btnEnter').onclick = function () { $('#houseSvg').onclick(); };
 $('#houseSvg').onclick = function () {
+  if (S.token) { S.me = { cls: '', no: '', name: '선생님' }; enter(); return; }
   var saved = null; try { saved = JSON.parse(ls('sj_me') || 'null'); } catch (e) {}
   var m = modal('<h3>입장하기</h3><label>학년·반</label><input id="jc" placeholder="예) 2-3" value="' + esc(saved && saved.cls) + '">' +
     '<label>번호</label><input id="jn" type="number" min="1" value="' + esc(saved && saved.no) + '">' +
@@ -434,7 +435,7 @@ $('#houseSvg').onclick = function () {
   };
 };
 function enter() {
-  $('#who').textContent = S.me.cls + ' ' + S.me.no + ' ' + S.me.name; $('#who').classList.remove('hidden');
+  $('#who').textContent = [S.me.cls, S.me.no, S.me.name].filter(Boolean).join(' '); $('#who').classList.remove('hidden');
   goHome();
 }
 var ROOMS = [
