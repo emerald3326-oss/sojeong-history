@@ -90,7 +90,6 @@ label{font-weight:700;font-size:.9rem}
 <header class="top">
   <h1>🏠 유쾌한 소정샘의 역사 Class</h1>
   <span id="who" class="pill hidden"></span>
-  <button id="btnHand" class="pill hidden">✋ 손들기</button>
   <button id="btnLogin" class="pill">🔒 선생님</button>
 </header>
 
@@ -283,7 +282,7 @@ $('#houseSvg').onclick = function () {
 };
 function enter() {
   $('#who').textContent = S.me.cls + ' ' + S.me.no + ' ' + S.me.name; $('#who').classList.remove('hidden');
-  $('#btnHand').classList.remove('hidden'); goHome();
+  goHome();
 }
 var ROOMS = [
   ['pre', '📚', '사전학습방'], ['today', '📅', '오늘의 수업'], ['ai', '🤖', 'AI 보조선생님'],
@@ -407,13 +406,6 @@ function reportView() {
       .catch(function (e) { msg($('#rmsg'), e.message); }).then(function () { b.disabled = false; });
   };
 }
-
-/* ---------- 손들기(학생) ---------- */
-$('#btnHand').onclick = function () {
-  var b = this; b.disabled = true;
-  api('raise', S.me).then(function () { b.textContent = '✋ 손듦!'; setTimeout(function () { b.textContent = '✋ 손들기'; b.disabled = false; }, 4000); })
-    .catch(function (e) { alert(e.message); b.disabled = false; });
-};
 
 /* ---------- 선생님 로그인 & 도구 ---------- */
 $('#btnLogin').onclick = function () {
