@@ -76,7 +76,6 @@ label{font-weight:700;font-size:.9rem}
 #tool{position:fixed;right:92px;top:50%;transform:translateY(-50%);width:min(380px,calc(100vw - 120px));max-height:80vh;overflow:auto;z-index:25;background:#fff;border:3px solid var(--line);border-radius:16px;padding:14px}
 #tool h3{margin:0 0 8px}
 .big{font-size:3.4rem;font-weight:900;text-align:center;margin:8px 0}
-.hand{display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px dashed #ccc}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .modal .box{background:#fff;border-radius:16px;padding:18px;width:min(420px,100%);max-height:90vh;overflow:auto;border:3px solid var(--line)}
@@ -177,7 +176,7 @@ function backend(action, p) {
 }
 function val(snap) { return snap.val() || {}; }
 /* ---------- 공통 ---------- */
-var S = { me: null, token: '', ym: '', tool: '', bgmOn: false, timerId: null, handTimer: null };
+var S = { me: null, token: '', ym: '', tool: '', bgmOn: false, timerId: null };
 var $ = function (s, r) { return (r || document).querySelector(s); };
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function safe(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
@@ -233,20 +232,6 @@ function route(action, p) {
       return backend('ask', p);
     case 'submit':
       return backend('submit', p);
-    case 'raise':
-      return db.ref('hands/' + uid).set({ cls: p.cls || '', no: String(p.no || ''), name: String(p.name || '').slice(0, 20), t: firebase.database.ServerValue.TIMESTAMP }).then(function () {
-        backend('log', { type: '손들기', date: todayStr(), cls: p.cls, no: p.no, name: p.name, status: '대기' }).catch(function () {});
-        return { ok: true };
-      });
-    case 'getHands':
-      return db.ref('hands').once('value').then(function (s) {
-        var o = val(s), st = dayStart();
-        var hands = Object.keys(o).map(function (k) { return o[k]; }).filter(function (h) { return h.t >= st; }).sort(function (a, b) { return a.t - b.t; })
-          .map(function (h) { var d = new Date(h.t); return { cls: h.cls, no: h.no, name: h.name, time: pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + ':' + pad2(d.getSeconds()) }; });
-        return { ok: true, hands: hands };
-      });
-    case 'clearHands':
-      return db.ref('hands').remove().then(function () { return { ok: true }; });
     case 'getRoster':
       return db.ref('roster').once('value').then(function (s) {
         var o = val(s), st = dayStart();

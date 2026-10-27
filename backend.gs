@@ -16,7 +16,7 @@ const CFG = {
   AI_COOLDOWN_SEC: 5
 };
 const HEADERS = ['순번', '일시', '구분', '수업일', '학반', '번호', '이름', '제목', '내용', '링크', '부가(JSON)', '상태'];
-const STUDENT_LOG = ['입장', '손들기'];
+const STUDENT_LOG = ['입장'];
 const TEACHER_LOG = ['수업', '사전학습', '심화탐구', '오늘의역사'];
 
 function doGet() { return ContentService.createTextOutput('소정샘의 역사 Class 서버 정상 동작 중'); }
