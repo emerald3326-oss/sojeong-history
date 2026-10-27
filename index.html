@@ -411,7 +411,7 @@ function lessonView(date) {
     $('#view').innerHTML = vhead(ttl, S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' : '', '달력', 'bk') +
       (L.body ? '<p class="lead" style="white-space:pre-wrap;color:var(--muted)">' + esc(L.body) + '</p>' : '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업이 없어요.') + '</p>') +
       '<div class="secs">' +
-      sec(1, '도입', '수업에 들어가기 전, 오늘의 질문을 만나요', tile(k.intro, 'play', '수업 들어가기', 't-sky')) +
+      sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', tile(k.intro, 'play', '수업 들어가기', 't-sky')) +
       sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', tile(k.summary, 'filetext', '내용 정리', 't-green') + tile(k.worksheet, 'clip', '학습지', 't-gold')) +
       sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', tile(k.activity, 'target', '수업 활동', 't-coral')) + '</div>';
     $('#bk').onclick = function () { calendarView(S.ym); };
