@@ -8,13 +8,13 @@
 <style>
 :root{--bg:#fef3c7;--ink:#3b2a1a;--wall:#fffbeb;--roof:#b45309;--line:#92400e;--accent:#d97706;--ok:#15803d;--bad:#b91c1c}
 *{box-sizing:border-box}
-body{margin:0;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:linear-gradient(#bfe3ff 0,#e8f6ff 45%,#9bd18b 45%,#7fbf6e 100%);color:var(--ink);min-height:100vh;padding-bottom:84px}
-button{font:inherit;cursor:pointer}
+body{margin:0;font-family:'Noto Sans KR','Malgun Gothic',sans-serif;background:linear-gradient(#bfe3ff 0,#e8f6ff 45%,#9bd18b 45%,#7fbf6e 100%);color:var(--ink);min-height:100vh;padding-bottom:100px;font-size:18px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}
+button{font:inherit;cursor:pointer;min-height:48px;-webkit-user-select:none;user-select:none}
 .hidden{display:none!important}
 header.top{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.85);position:sticky;top:0;z-index:20;backdrop-filter:blur(4px)}
-header.top h1{font-size:1.05rem;margin:0;flex:1}
-.pill{border:2px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-weight:700}
-.wrap{max-width:900px;margin:0 auto;padding:14px 16px}
+header.top h1{font-size:1.3rem;margin:0;flex:1}
+.pill{border:2px solid var(--line);background:#fff;border-radius:999px;padding:8px 18px;font-weight:700}
+.wrap{max-width:1100px;margin:0 auto;padding:14px 16px}
 
 /* 집 외관 */
 #entry{text-align:center;padding-top:20px}
@@ -26,17 +26,17 @@ header.top h1{font-size:1.05rem;margin:0;flex:1}
 /* 집 내부 */
 .roof{width:100%;height:90px}
 .rooms{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:6px solid var(--line);background:var(--line);border-top:none;border-radius:0 0 14px 14px;overflow:hidden}
-.room{background:var(--wall);border:3px solid var(--line);margin:-1.5px;padding:18px 6px;text-align:center;font-weight:700;border-radius:0;aspect-ratio:1/.9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:background .15s;font-size:clamp(.8rem,2.6vw,1.05rem)}
+.room{background:var(--wall);border:3px solid var(--line);margin:-1.5px;padding:18px 6px;text-align:center;font-weight:700;border-radius:0;aspect-ratio:1/.9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;transition:background .15s;font-size:clamp(1rem,2.6vw,1.4rem)}
 .room:hover{background:#fde68a}
 .room .ic{font-size:clamp(1.8rem,7vw,3rem)}
 
 /* 공통 패널 */
 .panel{background:#fff;border:3px solid var(--line);border-radius:16px;padding:16px;margin-top:12px}
 .panel h2{margin:0 0 10px}
-.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-weight:700}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:12px 22px;font-weight:700}
 .btn.sub{background:#fff;color:var(--line);border:2px solid var(--line)}
 .btn:disabled{opacity:.5}
-input,textarea,select{font:inherit;width:100%;padding:9px;border:2px solid #d6b98a;border-radius:10px;margin:4px 0 8px}
+input,textarea,select{font:inherit;font-size:18px;width:100%;padding:12px;border:2px solid #d6b98a;border-radius:10px;margin:4px 0 8px}
 label{font-weight:700;font-size:.9rem}
 .row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:90px}
 .msg{font-weight:700;margin:6px 0}.msg.err{color:var(--bad)}.msg.ok{color:var(--ok)}
@@ -46,18 +46,18 @@ label{font-weight:700;font-size:.9rem}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cal .dow{text-align:center;font-weight:700;padding:4px 0}
 .cal .dow:first-child,.cal .d.sun{color:#dc2626}.cal .dow:nth-child(7),.cal .d.sat{color:#2563eb}
-.cal .d{min-height:62px;border:2px solid #e7d3a8;border-radius:10px;background:#fffdf5;padding:3px;text-align:left;font-size:.85rem;overflow:hidden}
+.cal .d{min-height:96px;font-size:1.05rem;border:2px solid #e7d3a8;border-radius:10px;background:#fffdf5;padding:3px;text-align:left;font-size:.85rem;overflow:hidden}
 .cal .d.has{background:#fde68a;border-color:var(--accent)}
 .cal .d.today{outline:3px solid #ef4444}
-.cal .d small{display:block;font-size:.68rem;line-height:1.15;margin-top:2px}
+.cal .d small{display:block;font-size:.8rem;line-height:1.15;margin-top:2px}
 .cal .d.empty{visibility:hidden}
 
 /* 수업 페이지 */
 .sec{border-left:8px solid var(--accent);padding:6px 12px;margin:14px 0;background:#fffbeb;border-radius:0 12px 12px 0}
 .sec h3{margin:0 0 8px}
 .icons{display:flex;gap:10px;flex-wrap:wrap}
-.icn{display:flex;flex-direction:column;align-items:center;gap:4px;width:104px;padding:12px 6px;border:3px solid var(--line);border-radius:14px;background:#fff;text-decoration:none;color:var(--ink);font-weight:700;font-size:.9rem}
-.icn span{font-size:2rem}.icn.off{opacity:.4;pointer-events:none}
+.icn{display:flex;flex-direction:column;align-items:center;gap:4px;width:140px;padding:16px 8px;border:3px solid var(--line);border-radius:14px;background:#fff;text-decoration:none;color:var(--ink);font-weight:700;font-size:.9rem}
+.icn span{font-size:2.6rem}.icn.off{opacity:.4;pointer-events:none}
 
 .card{border:2px solid #e7d3a8;border-radius:12px;padding:10px;margin:8px 0;background:#fffdf5}
 .card h4{margin:0 0 4px}.card p{margin:4px 0;white-space:pre-wrap}
@@ -66,21 +66,20 @@ label{font-weight:700;font-size:.9rem}
 
 /* 하단 링크바 */
 .bottom{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;flex-wrap:wrap;gap:8px;padding:8px;background:rgba(255,255,255,.92);z-index:20}
-.bottom a{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);font-weight:700;border:2px solid var(--line);border-radius:12px;padding:8px 14px;background:#fff}
+.bottom a{display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);font-weight:700;border:2px solid var(--line);border-radius:12px;padding:12px 18px;background:#fff;min-height:48px}
 
 /* 우측 도구 */
 #dock{position:fixed;right:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:25}
-#dock button{width:56px;height:56px;border-radius:14px;border:3px solid var(--line);background:#fff;font-size:1.4rem;line-height:1.1}
-#dock button small{display:block;font-size:.6rem;font-weight:700}
+#dock button{width:72px;height:72px;border-radius:16px;border:3px solid var(--line);background:#fff;font-size:1.8rem;line-height:1.1}
+#dock button small{display:block;font-size:.75rem;font-weight:700}
 #dock button.on{background:#fde68a}
-#tool{position:fixed;right:76px;top:50%;transform:translateY(-50%);width:min(300px,calc(100vw - 100px));max-height:80vh;overflow:auto;z-index:25;background:#fff;border:3px solid var(--line);border-radius:16px;padding:14px}
+#tool{position:fixed;right:92px;top:50%;transform:translateY(-50%);width:min(380px,calc(100vw - 120px));max-height:80vh;overflow:auto;z-index:25;background:#fff;border:3px solid var(--line);border-radius:16px;padding:14px}
 #tool h3{margin:0 0 8px}
-.big{font-size:2.6rem;font-weight:900;text-align:center;margin:8px 0}
+.big{font-size:3.4rem;font-weight:900;text-align:center;margin:8px 0}
 .hand{display:flex;justify-content:space-between;padding:5px 8px;border-bottom:1px dashed #ccc}
 
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
 .modal .box{background:#fff;border-radius:16px;padding:18px;width:min(420px,100%);max-height:90vh;overflow:auto;border:3px solid var(--line)}
-@media(max-width:600px){#dock{top:auto;bottom:70px;transform:none;flex-direction:row;right:8px}#dock button{width:46px;height:46px;font-size:1.1rem}#tool{top:auto;bottom:126px;right:8px;transform:none}}
 </style>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
