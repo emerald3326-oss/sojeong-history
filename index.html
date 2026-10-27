@@ -63,8 +63,8 @@ body.teacher .wrap{padding-left:132px;padding-right:132px}
 /* 집 안 */
 .house{width:min(776px,100%);margin:34px auto 0;position:relative}
 .roof{display:block;width:calc(100% + 72px);margin:0 -36px;height:auto;position:relative;z-index:1}
-.chimney{position:absolute;right:130px;top:26px;width:40px;height:84px;background:var(--accent);border-radius:4px;z-index:0}
-.eave{position:relative;z-index:2;height:14px;border-radius:7px;background:var(--primary-deep);margin:-10px -45px 0}
+.chimney{position:absolute;right:130px;top:26px;width:40px;height:84px;background:linear-gradient(90deg,#F58862,#B8472A);border-radius:4px;z-index:0}
+.eave{position:relative;z-index:2;height:14px;border-radius:7px;background:linear-gradient(#3A7E72,#173F38);box-shadow:0 6px 10px rgba(30,42,58,.25);margin:-10px -45px 0}
 .rooms{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:24px;background:var(--surface);border-radius:0 0 20px 20px;box-shadow:var(--shadow-lift)}
 .room{border:0;border-radius:22px;padding:22px 10px;min-height:200px;background:var(--tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .15s}
 .room:active{transform:scale(.97)}
@@ -186,22 +186,58 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
     <p class="hint">문을 열고 들어오면 오늘의 역사 수업이 시작돼요</p>
     <div class="stage">
     <svg id="houseSvg" viewBox="0 0 520 440" role="button" aria-label="집으로 들어가기">
-      <ellipse cx="260" cy="424" rx="260" ry="16" fill="#1E2A3A" opacity=".14"/>
-      <rect x="330" y="50" width="36" height="70" rx="4" fill="#E0663F"/>
-      <rect x="60" y="200" width="400" height="212" rx="6" fill="#fff" style="filter:drop-shadow(0 12px 18px rgba(30,42,58,.16))"/>
-      <rect x="60" y="398" width="400" height="14" fill="#E3EFEB"/>
-      <polygon points="260,20 500,210 20,210" fill="#2F6B62" stroke="#2F6B62" stroke-width="10" stroke-linejoin="round"/>
-      <polygon points="260,72 424,206 96,206" fill="#1F4B45"/>
-      <rect x="10" y="202" width="500" height="12" rx="6" fill="#1F4B45"/>
-      <circle cx="260" cy="139" r="27" fill="#DCEBF5" stroke="#fff" stroke-width="6"/>
-      <g id="win"><rect x="98.5" y="250.5" width="91" height="87" rx="9" fill="#DCEBF5" stroke="#1F4B45" stroke-width="5"/><rect x="142" y="248" width="4" height="92" fill="#1F4B45"/><rect x="96" y="292" width="96" height="4" fill="#1F4B45"/><rect x="88" y="338" width="112" height="10" rx="5" fill="#1F4B45"/></g>
+      <defs>
+        <linearGradient id="hRoofL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4E9A8C"/><stop offset="1" stop-color="#2F6F64"/></linearGradient>
+        <linearGradient id="hRoofR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F7064"/><stop offset="1" stop-color="#1D4B44"/></linearGradient>
+        <linearGradient id="hGable" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#245D55"/><stop offset="1" stop-color="#12372F"/></linearGradient>
+        <linearGradient id="hEave" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3A7E72"/><stop offset="1" stop-color="#173F38"/></linearGradient>
+        <linearGradient id="hWall" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".6" stop-color="#F7F3EC"/><stop offset="1" stop-color="#E3DCCF"/></linearGradient>
+        <linearGradient id="hBase" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8F1EE"/><stop offset="1" stop-color="#C9DAD5"/></linearGradient>
+        <linearGradient id="hGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F0F8FD"/><stop offset=".55" stop-color="#C4DDEC"/><stop offset="1" stop-color="#9EC2DA"/></linearGradient>
+        <radialGradient id="hGlassR" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#F3FAFF"/><stop offset="1" stop-color="#A9CBE0"/></radialGradient>
+        <linearGradient id="hFrame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2C6A5F"/><stop offset="1" stop-color="#17433C"/></linearGradient>
+        <linearGradient id="hDoor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F58862"/><stop offset=".6" stop-color="#E0663F"/><stop offset="1" stop-color="#B8472A"/></linearGradient>
+        <linearGradient id="hDoorIn" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9532F"/><stop offset="1" stop-color="#F08A66"/></linearGradient>
+        <radialGradient id="hKnob" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFF6D6"/><stop offset="1" stop-color="#D9A93A"/></radialGradient>
+        <linearGradient id="hChim" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F58862"/><stop offset="1" stop-color="#B8472A"/></linearGradient>
+        <linearGradient id="hStep" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F2ECDF"/><stop offset="1" stop-color="#CFC6B3"/></linearGradient>
+        <radialGradient id="hBush" cx=".35" cy=".25" r=".85"><stop offset="0" stop-color="#62AE9E"/><stop offset=".55" stop-color="#2F7468"/><stop offset="1" stop-color="#1B4B44"/></radialGradient>
+        <filter id="hBlur" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="5"/></filter>
+        <filter id="hBlurS" x="-30%" y="-60%" width="160%" height="220%"><feGaussianBlur stdDeviation="2.2"/></filter>
+      </defs>
+      <ellipse cx="270" cy="424" rx="250" ry="14" fill="#1E2A3A" opacity=".28" filter="url(#hBlur)"/>
+      <rect x="330" y="50" width="36" height="76" rx="4" fill="url(#hChim)"/><rect x="326" y="46" width="44" height="10" rx="4" fill="#B8472A"/><rect x="326" y="46" width="44" height="4" rx="2" fill="#fff" opacity=".35"/>
+      <rect x="60" y="200" width="400" height="212" rx="6" fill="url(#hWall)"/>
+      <rect x="60" y="214" width="400" height="26" fill="#1E2A3A" opacity=".2" filter="url(#hBlur)"/>
+      <rect x="60" y="398" width="400" height="14" fill="url(#hBase)"/>
+      <polygon points="260,20 500,210 20,210" fill="url(#hRoofR)" stroke="url(#hRoofR)" stroke-width="10" stroke-linejoin="round"/>
+      <polygon points="260,20 260,210 20,210" fill="url(#hRoofL)"/>
+      <path d="M262 22 500 210" stroke="#fff" stroke-opacity=".0" stroke-width="1"/>
+      <g stroke="#0B2B26" stroke-opacity=".12" stroke-width="3" stroke-linecap="round"><path d="M224 80H296M196 112H324M168 144H352M140 176H380"/></g>
+      <path d="M258 24 26 206" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"/>
+      <polygon points="260,72 424,206 96,206" fill="url(#hGable)"/>
+      <rect x="10" y="202" width="500" height="12" rx="6" fill="url(#hEave)"/><rect x="14" y="203" width="492" height="3" rx="1.5" fill="#fff" opacity=".28"/>
+      <circle cx="260" cy="139" r="27" fill="url(#hGlassR)" stroke="#fff" stroke-width="6"/><circle cx="260" cy="139" r="30.5" fill="none" stroke="#12372F" stroke-opacity=".25" stroke-width="1.5"/>
+      <path d="M247 131a16 16 0 0 1 14-10" stroke="#fff" stroke-opacity=".8" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+      <g id="win">
+        <rect x="90" y="344" width="108" height="10" rx="5" fill="#1E2A3A" opacity=".25" filter="url(#hBlurS)"/>
+        <rect x="96" y="248" width="96" height="92" rx="10" fill="url(#hFrame)"/>
+        <rect x="102" y="254" width="84" height="80" rx="6" fill="url(#hGlass)"/>
+        <rect x="142" y="254" width="4" height="80" fill="url(#hFrame)"/><rect x="102" y="292" width="84" height="4" fill="url(#hFrame)"/>
+        <polygon points="106,258 128,258 108,330 106,330" fill="#fff" opacity=".42"/><polygon points="152,258 166,258 148,330 138,330" fill="#fff" opacity=".22"/>
+        <rect x="88" y="338" width="112" height="10" rx="5" fill="url(#hEave)"/><rect x="92" y="339" width="104" height="2.6" rx="1.3" fill="#fff" opacity=".3"/>
+      </g>
       <use href="#win" x="232"/>
-      <path d="M214 410V300a46 46 0 0 1 92 0V410Z" fill="#E0663F"/>
-      <path d="M228 396V300a32 32 0 0 1 64 0V396Z" fill="#FBE7DE" opacity=".35"/>
-      <circle cx="287" cy="343" r="5" fill="#fff"/>
-      <rect x="195" y="408" width="130" height="14" rx="4" fill="#E6DFD2"/>
-      <g fill="#2F6B62" opacity=".95"><ellipse cx="31" cy="405" rx="25" ry="17"/><ellipse cx="45" cy="397" rx="28" ry="25"/><ellipse cx="59" cy="404" rx="19" ry="18"/>
-      <ellipse cx="456" cy="408" rx="22" ry="15"/><ellipse cx="469" cy="401" rx="25" ry="22"/><ellipse cx="480" cy="407" rx="17" ry="16"/></g>
+      <rect x="205" y="262" width="110" height="150" rx="52" fill="#1E2A3A" opacity=".18" filter="url(#hBlurS)"/>
+      <path d="M214 410V300a46 46 0 0 1 92 0V410Z" fill="url(#hDoor)"/>
+      <path d="M214 410V300a46 46 0 0 1 92 0V410Z" fill="none" stroke="#fff" stroke-opacity=".35" stroke-width="2.4"/>
+      <path d="M228 396V300a32 32 0 0 1 64 0V396Z" fill="url(#hDoorIn)"/>
+      <path d="M228 396V300a32 32 0 0 1 64 0" fill="none" stroke="#7E2C16" stroke-opacity=".45" stroke-width="2.4"/>
+      <path d="M231 396V300a29 29 0 0 1 58 0" fill="none" stroke="#fff" stroke-opacity=".3" stroke-width="1.6"/>
+      <circle cx="287" cy="343" r="6" fill="url(#hKnob)"/><circle cx="285.5" cy="341.5" r="1.8" fill="#fff" opacity=".9"/>
+      <rect x="192" y="406" width="136" height="16" rx="4" fill="url(#hStep)"/><rect x="192" y="406" width="136" height="3" rx="1.5" fill="#fff" opacity=".6"/>
+      <g><ellipse cx="38" cy="418" rx="34" ry="6" fill="#1E2A3A" opacity=".2" filter="url(#hBlurS)"/><ellipse cx="31" cy="405" rx="25" ry="17" fill="url(#hBush)"/><ellipse cx="45" cy="397" rx="28" ry="25" fill="url(#hBush)"/><ellipse cx="59" cy="404" rx="19" ry="18" fill="url(#hBush)"/><ellipse cx="40" cy="388" rx="9" ry="5" fill="#fff" opacity=".22"/></g>
+      <g><ellipse cx="468" cy="420" rx="32" ry="6" fill="#1E2A3A" opacity=".2" filter="url(#hBlurS)"/><ellipse cx="456" cy="408" rx="22" ry="15" fill="url(#hBush)"/><ellipse cx="469" cy="401" rx="25" ry="22" fill="url(#hBush)"/><ellipse cx="480" cy="407" rx="17" ry="16" fill="url(#hBush)"/><ellipse cx="465" cy="390" rx="8" ry="4.5" fill="#fff" opacity=".22"/></g>
     </svg>
     <svg class="mascot" viewBox="0 0 250 400" aria-hidden="true">
       <defs>
@@ -211,7 +247,6 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
         <radialGradient id="mCardi" cx=".3" cy=".18" r=".95"><stop offset="0" stop-color="#58A596"/><stop offset=".5" stop-color="#2F6B62"/><stop offset="1" stop-color="#1A4640"/></radialGradient>
         <linearGradient id="mShade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".28"/></linearGradient>
         <linearGradient id="mSkirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34435E"/><stop offset="1" stop-color="#141B29"/></linearGradient>
-        <radialGradient id="mBlush"><stop offset="0" stop-color="#F0786F" stop-opacity=".8"/><stop offset="1" stop-color="#F0786F" stop-opacity="0"/></radialGradient>
         <radialGradient id="mIris" cx=".4" cy=".32" r=".75"><stop offset="0" stop-color="#A47452"/><stop offset=".55" stop-color="#5E3827"/><stop offset="1" stop-color="#2A170F"/></radialGradient>
         <linearGradient id="mLip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0645A"/><stop offset="1" stop-color="#B02A28"/></linearGradient>
         <linearGradient id="mBlouse" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#DCE5E8"/></linearGradient>
@@ -264,7 +299,6 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
       <path d="M85 112l-3-3M155 112l3-3" stroke="#17121A" stroke-width="2.2" stroke-linecap="round"/>
       <path d="M120 122q-4 9 0 12q3 1.5 6 0" stroke="#D9967F" stroke-width="2.6" stroke-linecap="round" fill="none"/>
       <ellipse cx="120.5" cy="132" rx="3.6" ry="2.2" fill="#fff" opacity=".45"/>
-      <ellipse cx="90" cy="136" rx="16" ry="12" fill="url(#mBlush)"/><ellipse cx="150" cy="136" rx="16" ry="12" fill="url(#mBlush)"/>
       <path d="M106 145q7-4 14-1.5q7-2.5 14 1.5q-6 13-14 13t-14-13z" fill="url(#mLip)"/>
       <path d="M108 146q12 5 24 0" stroke="#8E1F1E" stroke-width="1.8" stroke-linecap="round" fill="none"/>
       <ellipse cx="114" cy="151" rx="4.5" ry="1.8" fill="#fff" opacity=".6" transform="rotate(-8 114 151)"/>
@@ -289,7 +323,7 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
   <section id="home" class="hidden">
     <div class="house">
       <div class="chimney"></div>
-      <svg class="roof" viewBox="0 0 848 120" preserveAspectRatio="none"><polygon points="424,4 848,120 0,120" fill="#2F6B62"/><polygon points="424,38 802,120 46,120" fill="#1F4B45"/><text x="424" y="96" text-anchor="middle" font-size="22" fill="#fff" style="font-family:var(--f-body)">오늘은 어느 방으로 갈까요?</text></svg>
+      <svg class="roof" viewBox="0 0 848 120" preserveAspectRatio="none"><defs><linearGradient id="rL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4E9A8C"/><stop offset="1" stop-color="#2F6F64"/></linearGradient><linearGradient id="rR" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F7064"/><stop offset="1" stop-color="#1D4B44"/></linearGradient><linearGradient id="rG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#245D55"/><stop offset="1" stop-color="#12372F"/></linearGradient></defs><polygon points="424,4 848,120 0,120" fill="url(#rR)"/><polygon points="424,4 424,120 0,120" fill="url(#rL)"/><path d="M424 8 8 118" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/><polygon points="424,38 802,120 46,120" fill="url(#rG)"/><text x="424" y="96" text-anchor="middle" font-size="22" fill="#fff" style="font-family:var(--f-body)">오늘은 어느 방으로 갈까요?</text></svg>
       <div class="eave"></div>
       <div class="rooms" id="rooms"></div>
     </div>
