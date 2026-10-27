@@ -382,27 +382,30 @@ function route(action, p) {
       var L = p.links || {}, links = { intro: safe(L.intro), summary: safe(L.summary), worksheet: '', activity: safe(L.activity) };
       var les = { date: p.date, slot: slot, title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 2000), introText: String(p.introText || '').slice(0, 1500), links: links };
       return db.ref('lessons/' + p.date).once('value').then(function (s) {
-        var upd = slotsOf(s.val()), old = upd[slot] || null, tasks = [];
+        var upd = slotsOf(s.val()), old = upd[slot] || null, tasks = [], F = p.files || {};
         upd = { 1: upd[1] || null, 2: upd[2] || null };
-        var oldWh = old && old.worksheetHtml ? old.worksheetHtml : null;
         links.worksheet = old && old.links && old.links.worksheet ? old.links.worksheet : '';
-        if (oldWh) les.worksheetHtml = oldWh;
-        if (p.worksheetHtml) {
-          if (String(p.worksheetHtml).length > 4000000) throw new Error('학습지 HTML 파일이 너무 커요. 4MB 이하로 올려 주세요.');
-          var nr = db.ref('htmlfiles').push(), nm = String(p.worksheetName || '학습지.html').slice(0, 100);
-          tasks.push(nr.set({ name: nm, html: String(p.worksheetHtml) }));
-          if (oldWh) tasks.push(db.ref('htmlfiles/' + oldWh.id).remove());
-          les.worksheetHtml = { id: nr.key, name: nm }; links.worksheet = '';
-        } else if (p.removeWorksheet) {
-          if (oldWh) tasks.push(db.ref('htmlfiles/' + oldWh.id).remove());
-          delete les.worksheetHtml; links.worksheet = '';
-        }
+        ['worksheet', 'summary', 'activity'].forEach(function (kind) {
+          var fld = kind + 'Html', oldF = old && old[fld] ? old[fld] : null, req = F[kind] || {};
+          if (oldF) les[fld] = oldF;
+          if (req.html) {
+            if (String(req.html).length > 4000000) throw new Error('HTML 파일이 너무 커요. 4MB 이하로 올려 주세요.');
+            var nr = db.ref('htmlfiles').push(), nm = String(req.name || (kind + '.html')).slice(0, 100);
+            tasks.push(nr.set({ name: nm, html: String(req.html) }));
+            if (oldF) tasks.push(db.ref('htmlfiles/' + oldF.id).remove());
+            les[fld] = { id: nr.key, name: nm }; if (kind === 'worksheet') links.worksheet = '';
+          } else if (req.remove) {
+            if (oldF) tasks.push(db.ref('htmlfiles/' + oldF.id).remove());
+            delete les[fld]; if (kind === 'worksheet') links.worksheet = '';
+          }
+        });
         upd[slot] = les;
         if (!upd[1]) delete upd[1]; if (!upd[2]) delete upd[2];
         tasks.push(db.ref('lessons/' + p.date).set(upd));
         return Promise.all(tasks);
       }).then(function () {
-        backend('log', { type: '수업', date: p.date, title: '[수업' + slot + '] ' + les.title + (les.worksheetHtml ? ' [학습지 HTML]' : ''), body: les.body, extra: links }).catch(function () {});
+        var hs = ['summary', 'worksheet', 'activity'].filter(function (x) { return les[x + 'Html']; });
+        backend('log', { type: '수업', date: p.date, title: '[수업' + slot + '] ' + les.title + (hs.length ? ' [HTML ' + hs.join('/') + ']' : ''), body: les.body, extra: links }).catch(function () {});
         return { ok: true };
       });
     case 'getRoom':
@@ -534,9 +537,11 @@ function lessonView(date, slot) {
   api('getLesson', { date: date, slot: slot }).then(function (r) {
     var L = r.lesson || { title: '', body: '', links: {} }, k = L.links || {};
     function tile(url, ico, t, tone) { return url ? '<a class="tile ' + tone + '" href="' + esc(safe(url)) + '" target="_blank" rel="noopener"><span class="badge">' + ic(ico, 28) + '</span>' + t + '</a>' : '<div class="tile off ' + tone + '"><span class="badge">' + ic(ico, 28) + '</span>' + t + '<small>준비 중</small></div>'; }
-    function wsTile() {
-      if (L.worksheetHtml) return '<button class="tile t-gold" data-wh="' + esc(L.worksheetHtml.id) + '" data-name="' + esc(L.worksheetHtml.name) + '"><span class="badge">' + ic('clip', 28) + '</span>학습지</button>';
-      return tile(k.worksheet, 'clip', '학습지', 't-gold');
+    function tiles2(kind, ico, label, tone, link) {
+      var h = L[kind + 'Html'], out = '';
+      if (h) out += '<button class="tile ' + tone + '" data-wh="' + esc(h.id) + '" data-name="' + esc(h.name) + '"><span class="badge">' + ic(ico, 28) + '</span>' + (link ? label + ' (HTML)' : label) + '</button>';
+      if (link || !h) out += tile(link, ico, label, tone);
+      return out;
     }
     function sec(n, name, desc, tiles) { return '<div class="secard"><div class="sh"><span class="num">' + n + '</span><h3>' + name + '</h3></div><p>' + desc + '</p>' + tiles + '</div>'; }
     var dd = date.split('-'), ttl = Number(dd[1]) + '월 ' + Number(dd[2]) + '일' + (L.title ? ' · ' + esc(L.title) : '');
@@ -545,33 +550,45 @@ function lessonView(date, slot) {
       (L.body ? '<p class="lead" style="white-space:pre-wrap;color:var(--muted)">' + esc(L.body) + '</p>' : '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업 ' + slot + '이 없어요.') + '</p>') +
       '<div class="secs">' +
       sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', (L.introText ? '<div class="introtext">' + esc(L.introText) + '</div>' : '') + tile(k.intro, 'play', '수업 들어가기', 't-sky')) +
-      sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', tile(k.summary, 'filetext', '내용 정리', 't-green') + wsTile()) +
-      sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', tile(k.activity, 'target', '수업 활동', 't-coral')) + '</div>';
+      sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
+      sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', tiles2('activity', 'target', '수업 활동', 't-coral', k.activity)) + '</div>';
     $('#bk').onclick = function () { calendarView(S.ym); };
     document.querySelectorAll('[data-wh]').forEach(function (b) { b.onclick = function () { openHtml(b.dataset.wh, b.dataset.name); }; });
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { lessonView(date, Number(b.dataset.tab)); }; });
     if (S.token) $('#ed').onclick = function () {
       var m = modal('<h3>' + esc(date) + ' 수업 ' + slot + ' 등록</h3><label>제목</label><input id="lt" value="' + esc(L.title) + '"><label>안내 글(선택)</label><textarea id="lb" rows="3">' + esc(L.body) + '</textarea>' +
         ['intro|수업 들어가기 링크', 'summary|내용 정리 링크', 'worksheet|학습지', 'activity|수업 활동 링크'].map(function (x) {
-          var a = x.split('|');
-          if (a[0] !== 'worksheet') return '<label>' + a[1] + '</label><input id="l_' + a[0] + '" placeholder="https://" value="' + esc(k[a[0]]) + '">' +
-            (a[0] === 'intro' ? '<label>수업 들어가기 내용 (선택)</label><textarea id="l_introText" rows="5" placeholder="수업에 들어가기 전에 학생들이 읽을 내용을 적어 주세요.">' + esc(L.introText) + '</textarea>' : '');
-          return '<label>학습지 (HTML 파일, 4MB 이하)</label>' +
-            (L.worksheetHtml ? '<div style="margin:2px 0 8px">현재 파일: <b>' + esc(L.worksheetHtml.name) + '</b> <label style="margin-left:10px"><input id="rmw" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">파일 삭제</label></div>'
-              : (k.worksheet ? '<div style="margin:2px 0 8px">기존 학습지 링크가 연결되어 있어요. <label style="margin-left:10px"><input id="rmw" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">링크 삭제</label></div>' : '')) +
-            '<input id="l_worksheet" type="file" accept=".html,.htm,text/html"><div style="color:var(--muted);font-size:.9rem;margin:-6px 0 10px">' + (L.worksheetHtml || k.worksheet ? '새 파일을 고르면 지금 학습지가 바뀌어요.' : 'HTML 학습지 파일을 올려 주세요.') + '</div>';
+          var a = x.split('|'), kind = a[0];
+          function fileField(label, legacy) {
+            var cur = L[kind + 'Html'];
+            return '<label>' + label + ' (HTML 파일, 4MB 이하)</label>' +
+              (cur ? '<div style="margin:2px 0 8px">현재 파일: <b>' + esc(cur.name) + '</b> <label style="margin-left:10px"><input id="rm_' + kind + '" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">파일 삭제</label></div>'
+                : (legacy ? '<div style="margin:2px 0 8px">기존 학습지 링크가 연결되어 있어요. <label style="margin-left:10px"><input id="rm_' + kind + '" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">링크 삭제</label></div>' : '')) +
+              '<input id="f_' + kind + '" type="file" accept=".html,.htm,text/html"><div style="color:var(--muted);font-size:.9rem;margin:-6px 0 10px">' + (cur || legacy ? '새 파일을 고르면 지금 파일이 바뀌어요.' : 'HTML 파일을 올려 주세요.') + '</div>';
+          }
+          if (kind === 'worksheet') return fileField('학습지', k.worksheet);
+          return '<label>' + a[1] + '</label><input id="l_' + kind + '" placeholder="https://" value="' + esc(k[kind]) + '">' +
+            (kind === 'intro' ? '<label>수업 들어가기 내용 (선택)</label><textarea id="l_introText" rows="5" placeholder="수업에 들어가기 전에 학생들이 읽을 내용을 적어 주세요.">' + esc(L.introText) + '</textarea>' : '') +
+            (kind === 'summary' ? fileField('내용 정리', '') : kind === 'activity' ? fileField('수업 활동', '') : '');
         }).join('') +
         '<div id="le" class="msg"></div><button class="btn" id="ls" style="width:100%">저장</button>');
       $('#ls', m).onclick = function () {
-        var btn = this, f = $('#l_worksheet', m).files[0], rd = Promise.resolve({});
-        if (f) {
-          if (f.size > 4 * 1024 * 1024) { msg($('#le', m), '학습지 파일이 너무 커요. 4MB 이하로 올려 주세요.'); return; }
-          rd = new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res({ worksheetHtml: fr.result, worksheetName: f.name }); }; fr.onerror = function () { rej(new Error('파일을 읽지 못했어요.')); }; fr.readAsText(f, 'utf-8'); });
+        var btn = this, kinds = ['worksheet', 'summary', 'activity'], files = {}, reads = [];
+        for (var q = 0; q < kinds.length; q++) {
+          (function (kind) {
+            var f = $('#f_' + kind, m).files[0], rm = $('#rm_' + kind, m);
+            files[kind] = { remove: !!(rm && rm.checked) };
+            if (f) {
+              if (f.size > 4 * 1024 * 1024) { files = null; return; }
+              reads.push(new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { files[kind].html = fr.result; files[kind].name = f.name; res(); }; fr.onerror = function () { rej(new Error('파일을 읽지 못했어요.')); }; fr.readAsText(f, 'utf-8'); }));
+            }
+          })(kinds[q]);
+          if (!files) { msg($('#le', m), '파일이 너무 커요. 4MB 이하로 올려 주세요.'); return; }
         }
-        btn.disabled = true; msg($('#le', m), f ? '파일을 올리는 중…' : '저장 중…', true);
-        rd.then(function (x) {
-          return api('saveLesson', Object.assign({ date: date, slot: slot, title: $('#lt', m).value, body: $('#lb', m).value, removeWorksheet: !!($('#rmw', m) && $('#rmw', m).checked), introText: $('#l_introText', m).value,
-            links: { intro: $('#l_intro', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } }, x));
+        btn.disabled = true; msg($('#le', m), reads.length ? '파일을 올리는 중…' : '저장 중…', true);
+        Promise.all(reads).then(function () {
+          return api('saveLesson', { date: date, slot: slot, title: $('#lt', m).value, body: $('#lb', m).value, introText: $('#l_introText', m).value, files: files,
+            links: { intro: $('#l_intro', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } });
         }).then(function () { m.remove(); lessonView(date, slot); }).catch(function (e) { msg($('#le', m), e.message); btn.disabled = false; });
       };
     };
