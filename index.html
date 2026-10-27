@@ -387,7 +387,7 @@ function route(action, p) {
     case 'saveLesson':
       var slot = Number(p.slot) === 2 ? 2 : 1;
       var L = p.links || {}, links = { intro: '', video: safe(L.video), summary: safe(L.summary), worksheet: '', activity: safe(L.activity) };
-      var les = { date: p.date, slot: slot, title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 2000), introText: String(p.introText || '').slice(0, 1500), previewText: String(p.previewText || '').slice(0, 3000), links: links };
+      var les = { date: p.date, slot: slot, title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 2000), summaryText: String(p.summaryText || '').slice(0, 2000), activityText: String(p.activityText || '').slice(0, 2000), previewText: String(p.previewText || '').slice(0, 3000), links: links };
       return db.ref('lessons/' + p.date).once('value').then(function (s) {
         var upd = slotsOf(s.val()), old = upd[slot] || null, tasks = [], F = p.files || {};
         upd = { 1: upd[1] || null, 2: upd[2] || null };
@@ -559,9 +559,9 @@ function lessonView(date, slot) {
     $('#view').innerHTML = vhead(ttl, '<span class="tabs">' + tabs + '</span>' + (S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' : ''), '달력', 'bk') +
       '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업 ' + slot + '이 없어요.') + '</p>' +
       '<div class="secs">' +
-      sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', (L.introText ? '<div class="introtext">' + esc(L.introText) + '</div>' : '') + '<div class="tilerow">' + pvTile() + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
-      sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
-      sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', tiles2('activity', 'target', '수업 활동', 't-coral', k.activity)) + '</div>';
+      sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', '<div class="tilerow">' + pvTile() + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
+      sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', (L.summaryText ? '<div class="introtext">' + esc(L.summaryText) + '</div>' : '') + tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
+      sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', (L.activityText ? '<div class="introtext">' + esc(L.activityText) + '</div>' : '') + tiles2('activity', 'target', '수업 활동', 't-coral', k.activity)) + '</div>';
     $('#bk').onclick = function () { calendarView(S.ym); };
     document.querySelectorAll('[data-pv]').forEach(function (b) { b.onclick = function () {
       var m = modal('<h3>수업 미리보기</h3><div class="readtext">' + esc(L.previewText) + '</div><button class="btn" style="width:100%;margin-top:14px">닫기</button>');
@@ -582,9 +582,9 @@ function lessonView(date, slot) {
           }
           if (kind === 'worksheet') return fileField('학습지', k.worksheet);
           return (kind === 'intro' ? '' : '<label>' + a[1] + '</label><input id="l_' + kind + '" placeholder="https://" value="' + esc(k[kind]) + '">') +
-            (kind === 'intro' ? '<label>수업 들어가기 내용 (선택)</label><textarea id="l_introText" rows="5" placeholder="수업에 들어가기 전에 학생들이 읽을 내용을 적어 주세요.">' + esc(L.introText) + '</textarea>' +
-              '<label>수업 미리보기 내용 (선택)</label><textarea id="l_previewText" rows="6" placeholder="학생들이 아이콘을 눌러 볼 수업 미리보기 내용을 적어 주세요.">' + esc(L.previewText) + '</textarea><label>수업 관련 영상 링크</label><input id="l_video" placeholder="https://" value="' + esc(k.video) + '">' : '') +
-            (kind === 'summary' ? fileField('내용 정리', '') : kind === 'activity' ? fileField('수업 활동', '') : '');
+            (kind === 'intro' ? '<label>수업 미리보기 내용 (선택)</label><textarea id="l_previewText" rows="6" placeholder="학생들이 아이콘을 눌러 볼 수업 미리보기 내용을 적어 주세요.">' + esc(L.previewText) + '</textarea><label>수업 관련 영상 링크</label><input id="l_video" placeholder="https://" value="' + esc(k.video) + '">' : '') +
+            (kind === 'summary' ? '<label>내용 정리 내용 입력 (선택)</label><textarea id="l_summaryText" rows="5" placeholder="학생들이 볼 내용 정리를 적어 주세요.">' + esc(L.summaryText) + '</textarea>' + fileField('내용 정리', '')
+              : kind === 'activity' ? '<label>수업 활동 내용 입력 (선택)</label><textarea id="l_activityText" rows="5" placeholder="학생들이 할 수업 활동 내용을 적어 주세요.">' + esc(L.activityText) + '</textarea>' + fileField('수업 활동', '') : '');
         }).join('') +
         '<div id="le" class="msg"></div><button class="btn" id="ls" style="width:100%">저장</button>');
       $('#ls', m).onclick = function () {
@@ -602,7 +602,7 @@ function lessonView(date, slot) {
         }
         btn.disabled = true; msg($('#le', m), reads.length ? '파일을 올리는 중…' : '저장 중…', true);
         Promise.all(reads).then(function () {
-          return api('saveLesson', { date: date, slot: slot, title: $('#lt', m).value, body: '', introText: $('#l_introText', m).value, previewText: $('#l_previewText', m).value, files: files,
+          return api('saveLesson', { date: date, slot: slot, title: $('#lt', m).value, body: '', summaryText: $('#l_summaryText', m).value, activityText: $('#l_activityText', m).value, previewText: $('#l_previewText', m).value, files: files,
             links: { video: $('#l_video', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } });
         }).then(function () { m.remove(); lessonView(date, slot); }).catch(function (e) { msg($('#le', m), e.message); btn.disabled = false; });
       };
