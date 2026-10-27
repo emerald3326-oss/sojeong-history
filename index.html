@@ -125,8 +125,8 @@ label{font-weight:500;font-size:.95rem}
 
 /* 우측 도구 */
 #dock{position:fixed;right:28px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--surface);border-radius:28px;box-shadow:var(--shadow-lift);z-index:25}
-#dock button{width:76px;height:76px;border-radius:20px;border:0;background:var(--primary-soft);color:var(--primary);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0}
-#dock button small{font-size:.8rem;font-weight:500;color:var(--primary-deep)}
+#dock button,#dock a{width:76px;height:76px;border-radius:20px;border:0;text-decoration:none;background:var(--primary-soft);color:var(--primary);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0}
+#dock button small,#dock a small{font-size:.8rem;font-weight:500;color:var(--primary-deep);white-space:nowrap}
 #dock button.on{background:var(--primary);color:#fff}#dock button.on small{color:#fff}
 #tool{position:fixed;right:132px;top:50%;transform:translateY(-50%);width:min(380px,calc(100vw - 170px));max-height:80vh;overflow:auto;z-index:25;background:var(--surface);border-radius:24px;padding:22px;box-shadow:var(--shadow-lift)}
 #tool h3{margin:0 0 8px;font:700 1.25rem/1.3 'Noto Sans KR',sans-serif}
@@ -189,7 +189,6 @@ label{font-weight:500;font-size:.95rem}
 </main>
 
 <div class="bottom">
-  <a href="https://app.notion.com/p/2ceaf6bab4c1818b9a12cd98c4a511db?v=2ceaf6bab4c18181b273000c1d27f588&source=copy_link" target="_blank" rel="noopener"><span data-ic="notebook"></span>수업 노션</a>
   <a href="https://www.classting.com/home" target="_blank" rel="noopener"><span data-ic="cap"></span>클래스팅</a>
   <a href="https://tooning.io/" target="_blank" rel="noopener"><span data-ic="palette"></span>투닝</a>
   <a href="https://ibook.vivasam.com/CBS_iBook/3117/contents/index.html?skin=basic01" target="_blank" rel="noopener"><span data-ic="book"></span>역사1 교과서</a>
@@ -198,6 +197,7 @@ label{font-weight:500;font-size:.95rem}
 
 <!-- 선생님 전용 도구 -->
 <div id="dock" class="hidden">
+  <a href="https://app.notion.com/p/2ceaf6bab4c181f28c29c0cf2fa1e7e5?source=copy_link" target="_blank" rel="noopener"><span data-ic="notebook" data-s="26"></span><small>수업 노션</small></a>
   <button data-tool="pick"><span data-ic="users" data-s="26"></span><small>발표자</small></button>
   <button data-tool="timer"><span data-ic="timer" data-s="26"></span><small>타이머</small></button>
   <button data-tool="bgm" id="bgmBtn"><span data-ic="music" data-s="26"></span><small>음악</small></button>
