@@ -65,7 +65,7 @@ body.teacher .wrap{padding-left:132px;padding-right:132px}
 .roof{display:block;width:calc(100% + 72px);margin:0 -36px;height:auto;position:relative;z-index:1}
 .flagpole{position:absolute;right:56px;top:-6px;width:5px;height:96px;border-radius:3px;background:linear-gradient(90deg,#E9EEF1,#9AA6B0);z-index:0}
 .flagpole::after{content:"";position:absolute;left:5px;top:6px;width:46px;height:30px;background:linear-gradient(135deg,#F58862,#C8502C);border-radius:2px 8px 8px 2px}
-.eave{position:relative;z-index:2;height:14px;border-radius:7px;background:linear-gradient(#3A7E72,#173F38);box-shadow:0 6px 10px rgba(30,42,58,.25);margin:-10px -45px 0}
+.eave{position:relative;z-index:2;height:46px;border-radius:12px;background:linear-gradient(#3A7E72,#173F38);box-shadow:0 6px 10px rgba(30,42,58,.25);margin:-4px -45px 0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.35rem;text-align:center}
 .rooms{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:24px;background:var(--surface);border-radius:0 0 20px 20px;box-shadow:var(--shadow-lift)}
 .room{border:0;border-radius:22px;padding:22px 10px;min-height:200px;background:var(--tint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;transition:transform .15s}
 .room:active{transform:scale(.97)}
@@ -182,7 +182,7 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
   .cta{padding:14px 28px}
   .house{margin-top:18px}
   .roof{width:calc(100% + 24px);margin:0 -12px}
-  .eave{margin:-10px -14px 0}
+  .eave{margin:-4px -14px 0;height:40px;font-size:1.1rem}
   .flagpole{right:34px}
   .rooms{grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
   .room{min-height:150px;padding:14px 6px;border-radius:18px}
@@ -362,8 +362,8 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
   <section id="home" class="hidden">
     <div class="house">
       <div class="flagpole"></div>
-      <svg class="roof" viewBox="0 0 848 120" preserveAspectRatio="none"><defs><linearGradient id="rL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4E9A8C"/><stop offset="1" stop-color="#2F6F64"/></linearGradient><linearGradient id="rD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F7064"/><stop offset="1" stop-color="#17413B"/></linearGradient></defs><polygon points="424,6 540,78 308,78" fill="url(#rD)"/><polygon points="424,6 424,78 308,78" fill="url(#rL)"/><path d="M422 10 314 76" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"/><rect x="0" y="74" width="848" height="46" rx="8" fill="url(#rD)"/><rect x="4" y="76" width="840" height="4" rx="2" fill="#fff" opacity=".3"/><text x="424" y="106" text-anchor="middle" font-size="22" fill="#fff" style="font-family:var(--f-body)">오늘은 어느 교실로 갈까요?</text></svg>
-      <div class="eave"></div>
+      <svg class="roof" viewBox="0 0 848 80" preserveAspectRatio="none"><defs><linearGradient id="rL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4E9A8C"/><stop offset="1" stop-color="#2F6F64"/></linearGradient><linearGradient id="rD" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2F7064"/><stop offset="1" stop-color="#17413B"/></linearGradient></defs><polygon points="424,4 548,80 300,80" fill="url(#rD)"/><polygon points="424,4 424,80 300,80" fill="url(#rL)"/><path d="M422 8 308 78" stroke="#fff" stroke-opacity=".4" stroke-width="3" stroke-linecap="round"/></svg>
+      <div class="eave">오늘은 어느 교실로 갈까요?</div>
       <div class="rooms" id="rooms"></div>
     </div>
   </section>
