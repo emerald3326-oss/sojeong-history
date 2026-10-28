@@ -660,8 +660,10 @@ $('#rooms').onclick = function (e) {
 
 /* ---------- 오늘의 수업: 달력 ---------- */
 function calendarView(ym) {
-  var d = new Date(); S.ym = ym || (d.getFullYear() === 2026 ? '2026-' + ('0' + (d.getMonth() + 1)).slice(-2) : '2026-03');
-  var y = 2026, mo = Number(S.ym.slice(5));
+  var d = new Date(), cy = d.getFullYear();
+  S.ym = ym || (cy >= 2026 && cy <= 2027 ? cy + '-' + ('0' + (d.getMonth() + 1)).slice(-2) : (cy > 2027 ? '2027-03' : '2026-03'));
+  var y = Number(S.ym.slice(0, 4)), mo = Number(S.ym.slice(5));
+  var shift = function (n) { var t = new Date(y, mo - 1 + n, 1); return t.getFullYear() + '-' + ('0' + (t.getMonth() + 1)).slice(-2); };
   show('view'); $('#view').innerHTML = '<div class="panel"><div class="msg">불러오는 중…</div></div>';
   api('getMonth', { ym: S.ym }).then(function (r) {
     var first = new Date(y, mo - 1, 1).getDay(), last = new Date(y, mo, 0).getDate(), h = '';
@@ -673,9 +675,9 @@ function calendarView(ym) {
       var pills = [1, 2].map(function (k) { return (dy && dy[k]) || S.token ? '<span class="sl s' + k + (dy && dy[k] ? ' on' : '') + '" data-slot="' + k + '" title="' + esc(dy && dy[k] ? dy[k] : '수업 ' + k + ' 등록') + '">' + ic('book', 14) + k + '</span>' : ''; }).join('');
       h += '<button class="d' + (dy ? ' has' : '') + (ds === r.today ? ' today' : '') + (dw === 0 ? ' sun' : dw === 6 ? ' sat' : '') + '" data-d="' + ds + '"><b>' + n + '</b><span class="slots">' + pills + '</span></button>';
     }
-    $('#view').innerHTML = vhead('오늘의 수업') + '<div class="panel"><div class="calhead"><button class="circ" id="pm" aria-label="이전 달"' + (mo <= 1 ? ' disabled' : '') + '>' + ic('left', 22) + '</button><h2>2026년 ' + mo + '월</h2><button class="circ" id="nm" aria-label="다음 달"' + (mo >= 12 ? ' disabled' : '') + '>' + ic('right', 22) + '</button></div><div class="cal">' + h + '</div></div>';
-    $('#pm').onclick = function () { calendarView('2026-' + ('0' + (mo - 1)).slice(-2)); };
-    $('#nm').onclick = function () { calendarView('2026-' + ('0' + (mo + 1)).slice(-2)); };
+    $('#view').innerHTML = vhead('오늘의 수업') + '<div class="panel"><div class="calhead"><button class="circ" id="pm" aria-label="이전 달"' + (y <= 2026 && mo <= 1 ? ' disabled' : '') + '>' + ic('left', 22) + '</button><h2>' + y + '년 ' + mo + '월</h2><button class="circ" id="nm" aria-label="다음 달"' + (y >= 2027 && mo >= 12 ? ' disabled' : '') + '>' + ic('right', 22) + '</button></div><div class="cal">' + h + '</div></div>';
+    $('#pm').onclick = function () { calendarView(shift(-1)); };
+    $('#nm').onclick = function () { calendarView(shift(1)); };
     $('.cal').onclick = function (e) { var b = e.target.closest('.d[data-d]'); if (!b) return; var sl = e.target.closest('[data-slot]'), dy = r.days[b.dataset.d]; lessonView(b.dataset.d, sl ? Number(sl.dataset.slot) : (dy && !dy[1] && dy[2] ? 2 : 1)); };
   }).catch(function (e) { $('#view').innerHTML = vhead('') + '<div class="panel"><div class="msg err">' + esc(e.message) + '</div></div>'; });
 }
@@ -718,7 +720,7 @@ function lessonView(date, slot) {
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { lessonView(date, Number(b.dataset.tab)); }; });
     if (S.token && r.lesson) $('#mv').onclick = function () {
       var m = modal('<h3>수업 옮기기·복사</h3><p style="margin:0 0 8px;color:var(--muted)">지금 수업: ' + esc(date) + ' · 수업 ' + slot + (L.title ? ' · ' + esc(L.title) : '') + '</p>' +
-        '<label>옮길 날짜</label><input id="md" type="date" min="2026-01-01" max="2026-12-31" value="' + esc(date) + '">' +
+        '<label>옮길 날짜</label><input id="md" type="date" min="2026-01-01" max="2027-12-31" value="' + esc(date) + '">' +
         '<label>어느 수업으로</label><select id="ms"><option value="1">수업 1</option><option value="2">수업 2</option></select>' +
         '<label>방식</label><select id="mm"><option value="move">옮기기 (지금 수업은 비워져요)</option><option value="copy">복사 (지금 수업은 그대로 둬요)</option></select>' +
         '<div id="me" class="msg"></div><button class="btn" id="mb" style="width:100%">실행</button>');
