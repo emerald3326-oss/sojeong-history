@@ -129,16 +129,22 @@ function ask_(b, user) {
       '너는 "유쾌한 소정샘의 역사 Class"의 AI 보조 선생님이야. 중·고등학생에게 한국사·세계사 용어와 사진(사료, 유물, 지도 등)을 쉽고 친절한 존댓말로 설명해 줘. ' +
       '형식: 1) 한 줄 뜻 2) 시기·배경 3) 핵심 포인트 2~3개 4) 함께 알면 좋은 용어. 전체 400자 내외. 역사와 무관한 질문은 정중히 사양하고, 확실하지 않은 내용은 추측하지 말고 모른다고 말해.' }] },
     contents: [{ role: 'user', parts: parts }],
-    generationConfig: { maxOutputTokens: 1024 }
+    generationConfig: { maxOutputTokens: 8192, thinkingConfig: { thinkingLevel: 'low' } }
   };
-  const res = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models/' + CFG.GEMINI_MODEL + ':generateContent', {
-    method: 'post', contentType: 'application/json', headers: { 'x-goog-api-key': key }, payload: JSON.stringify(body), muteHttpExceptions: true
-  });
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + CFG.GEMINI_MODEL + ':generateContent';
+  const call = function () {
+    return UrlFetchApp.fetch(url, { method: 'post', contentType: 'application/json', headers: { 'x-goog-api-key': key }, payload: JSON.stringify(body), muteHttpExceptions: true });
+  };
+  let res = call();
+  // 모델이 thinkingLevel 설정을 받지 않으면 설정 없이 한 번 더 시도
+  if (res.getResponseCode() === 400 && /thinking/i.test(res.getContentText())) { delete body.generationConfig.thinkingConfig; res = call(); }
   const json = JSON.parse(res.getContentText() || '{}');
   if (res.getResponseCode() !== 200) throw new Error('AI 응답 오류(' + res.getResponseCode() + '): ' + ((json.error && json.error.message) || '').slice(0, 120));
-  const ans = (((json.candidates || [])[0] || {}).content || {}).parts;
-  const out = ans ? ans.map(function (x) { return x.text || ''; }).join('') : '';
+  const cand = (json.candidates || [])[0] || {};
+  const ans = (cand.content || {}).parts;
+  let out = ans ? ans.filter(function (x) { return !x.thought; }).map(function (x) { return x.text || ''; }).join('') : '';
   if (!out) throw new Error('AI가 답변을 만들지 못했어요. 다시 시도해 주세요.');
+  if (cand.finishReason === 'MAX_TOKENS') out += '\n\n(답변이 길어 여기까지만 보여요. 질문을 나눠서 다시 물어봐 주세요.)';
   append_('AI질문', { date: Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd'), cls: b.cls, no: b.no, name: b.name, title: text, body: out, extra: { image: !!b.image } });
   return { ok: true, answer: out };
 }
