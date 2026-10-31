@@ -555,6 +555,39 @@ async function assignPlanImpl(p) {
   backend('log', { type: '수업', date: date, title: '[역사' + slot + ' 진도계획 등록] ' + (nl.title || ''), body: '', extra: {} }).catch(function () {});
   return { ok: true };
 }
+/* 달력에 등록한 수업을 진도계획의 소단원으로 복사/옮기기 */
+async function lessonToPlanImpl(p) {
+  var fd = String(p.fromDate), fs = Number(p.fromSlot) === 2 ? 2 : 1, copy = p.mode !== 'move';
+  var slots = slotsOf((await db.ref('lessons/' + fd).once('value')).val()), norm = {};
+  if (slots[1]) norm[1] = slots[1]; if (slots[2]) norm[2] = slots[2];
+  var src = norm[fs]; if (!src) throw new Error('옮길 수업을 찾을 수 없어요.');
+  var oldPlan = (await db.ref('plans/' + p.subject + '/' + p.sid).once('value')).val();
+  var kinds = ['worksheet', 'summary', 'activity'], tasks = [];
+  if (oldPlan) kinds.forEach(function (k) { if (oldPlan[k + 'Html']) tasks.push(db.ref('htmlfiles/' + oldPlan[k + 'Html'].id).remove()); });
+  var np = JSON.parse(JSON.stringify(src)); delete np.date; delete np.slot; delete np.fromPlan; np.sid = p.sid;
+  if (oldPlan && oldPlan.dates) np.dates = oldPlan.dates;
+  if (copy) {
+    for (var i = 0; i < kinds.length; i++) {
+      var h = src[kinds[i] + 'Html']; if (!h) continue;
+      var f = (await db.ref('htmlfiles/' + h.id).once('value')).val();
+      if (!f) { delete np[kinds[i] + 'Html']; continue; }
+      var nr = db.ref('htmlfiles').push(); tasks.push(nr.set({ name: f.name, html: f.html })); np[kinds[i] + 'Html'] = { id: nr.key, name: h.name };
+    }
+  }
+  tasks.push(db.ref('plans/' + p.subject + '/' + p.sid).set(np));
+  if (!copy) {
+    delete norm[fs];
+    tasks.push(Object.keys(norm).length ? db.ref('lessons/' + fd).set(norm) : db.ref('lessons/' + fd).remove());
+    if (src.fromPlan) {
+      var fsj = String(src.fromPlan).split('-')[0], dref = db.ref('plans/' + fsj + '/' + src.fromPlan + '/dates');
+      var ds = (await dref.once('value')).val();
+      if (ds) { ds = ds.filter(function (d) { return d !== fd + '|' + fs; }); tasks.push(ds.length ? dref.set(ds) : dref.remove()); }
+    }
+  }
+  await Promise.all(tasks);
+  backend('log', { type: '수업', date: fd, title: '[역사' + fs + (copy ? ' → 진도계획 복사' : ' → 진도계획 이동') + '] ' + (np.title || ''), body: '', extra: {} }).catch(function () {});
+  return { ok: true };
+}
 async function moveLessonImpl(p) {
   var fd = String(p.fromDate), td = String(p.toDate), fs = Number(p.fromSlot) === 2 ? 2 : 1, ts = Number(p.toSlot) === 2 ? 2 : 1, copy = p.mode === 'copy';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(td)) throw new Error('날짜를 선택해 주세요.');
@@ -647,6 +680,8 @@ function route(action, p) {
       }).then(function () { return { ok: true }; });
     case 'assignPlan':
       return assignPlanImpl(p);
+    case 'lessonToPlan':
+      return lessonToPlanImpl(p);
     case 'getRoom':
       return db.ref('rooms/' + p.room).once('value').then(function (s) {
         var o = val(s), items = Object.keys(o).map(function (k) { var v = o[k]; v.seq = k; return v; }).sort(function (a, b) { return (b.t || 0) - (a.t || 0); });
@@ -850,11 +885,35 @@ function lessonView(date, slot) {
     var L = r.lesson || { title: '', body: '', links: {} };
     var dd = date.split('-'), ttl = Number(dd[1]) + '월 ' + Number(dd[2]) + '일' + (L.title ? ' · ' + esc(L.title) : '');
     var tabs = [1, 2].map(function (n) { return '<button class="chip' + (n === slot ? ' on' : '') + '" data-tab="' + n + '">' + ic('book', 18) + '역사' + n + (r.slots[n] ? '' : '<small style="opacity:.6">·비어 있음</small>') + '</button>'; }).join('');
-    $('#view').innerHTML = vhead(ttl, '<span class="tabs">' + tabs + '</span>' + (S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' + (r.lesson ? '<button class="chip soft" id="mv">' + ic('move', 18) + '옮기기·복사</button>' : '') : ''), '달력', 'bk') +
+    $('#view').innerHTML = vhead(ttl, '<span class="tabs">' + tabs + '</span>' + (S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' + (r.lesson ? '<button class="chip soft" id="mv">' + ic('move', 18) + '옮기기·복사</button><button class="chip soft" id="lp">' + ic('clip', 18) + '진도계획으로</button>' : '') : ''), '달력', 'bk') +
       '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 역사' + slot + ' 수업이 없어요.') + '</p>' + lessonCards(L);
     $('#bk').onclick = function () { calendarView(S.ym); };
     bindLessonCards(L);
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { lessonView(date, Number(b.dataset.tab)); }; });
+    if (S.token && r.lesson) $('#lp').onclick = function () {
+      var sj0 = slot === 2 ? 'h2' : 'h1';
+      var m = modal('<h3>진도계획으로 옮기기</h3><p style="margin:0 0 8px;color:var(--muted)">지금 수업: ' + esc(date) + ' · 역사' + slot + (L.title ? ' · ' + esc(L.title) : '') + '</p>' +
+        '<label>과목</label><select id="ps"><option value="h1">역사1</option><option value="h2">역사2</option></select>' +
+        '<label>대단원</label><select id="pu"></select><label>중단원</label><select id="pm"></select><label>소단원</label><select id="pt"></select>' +
+        '<label>방식</label><select id="pmd"><option value="copy">복사 (달력의 수업은 그대로 둬요)</option><option value="move">옮기기 (달력의 수업은 비워져요)</option></select>' +
+        '<div id="pe" class="msg"></div><button class="btn" id="pb" style="width:100%">실행</button>');
+      function fill(sel, items) { $(sel, m).innerHTML = items.map(function (x) { return '<option value="' + esc(x.id) + '">' + esc(x.label) + '</option>'; }).join(''); }
+      function onS() { var P = PLAN_DATA[$('#ps', m).value]; fill('#pu', P.units.map(function (u) { return { id: u.id, label: u.title }; })); onU(); }
+      function onU() { var P = PLAN_DATA[$('#ps', m).value], u = P.units.filter(function (x) { return x.id === $('#pu', m).value; })[0]; fill('#pm', u.mids.map(function (mm) { return { id: mm.id, label: mm.title }; })); onM(); }
+      function onM() { var P = PLAN_DATA[$('#ps', m).value], mm = null; P.units.forEach(function (u) { u.mids.forEach(function (x) { if (x.id === $('#pm', m).value) mm = x; }); }); fill('#pt', mm.smalls.map(function (sm) { return { id: sm.id, label: sm.mark + ' ' + sm.title + ' (' + sm.hours + '차시)' }; })); }
+      $('#ps', m).value = sj0; onS();
+      $('#ps', m).onchange = onS; $('#pu', m).onchange = onU; $('#pm', m).onchange = onM;
+      if (L.fromPlan && planInfo(sj0, L.fromPlan)) { var inf = planInfo(sj0, L.fromPlan); $('#pu', m).value = inf.u.id; onU(); $('#pm', m).value = inf.m.id; onM(); $('#pt', m).value = inf.s.id; }
+      $('#pb', m).onclick = function () {
+        var btn = this, sj = $('#ps', m).value, sid = $('#pt', m).value, mode = $('#pmd', m).value;
+        btn.disabled = true; msg($('#pe', m), '확인 중…', true);
+        api('getPlan', { subject: sj, sid: sid }).then(function (g) {
+          if (g.plan && !confirm('이 소단원에는 이미 입력한 진도계획 내용이 있어요. 덮어쓸까요?')) throw new Error('취소했어요.');
+          msg($('#pe', m), '처리 중…', true);
+          return api('lessonToPlan', { fromDate: date, fromSlot: slot, subject: sj, sid: sid, mode: mode });
+        }).then(function () { m.remove(); planItemView(sj, sid); }).catch(function (e) { msg($('#pe', m), e.message); btn.disabled = false; });
+      };
+    };
     if (S.token && r.lesson) $('#mv').onclick = function () {
       var m = modal('<h3>수업 옮기기·복사</h3><p style="margin:0 0 8px;color:var(--muted)">지금 수업: ' + esc(date) + ' · 역사' + slot + (L.title ? ' · ' + esc(L.title) : '') + '</p>' +
         '<label>옮길 날짜</label><input id="md" type="date" min="2026-01-01" max="2027-12-31" value="' + esc(date) + '">' +
