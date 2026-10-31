@@ -24,6 +24,10 @@
         ".read": true,
         ".validate": "newData.hasChildren(['name', 'html']) && newData.child('name').isString() && newData.child('name').val().length < 200 && newData.child('html').isString() && newData.child('html').val().length < 4500000"
       }
+    },
+    "plans": {
+      ".read": "auth != null && auth.token.email == 'teacher@sojeong.kr'",
+      ".write": "auth != null && auth.token.email == 'teacher@sojeong.kr'"
     }
   }
 }

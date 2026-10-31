@@ -151,10 +151,30 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
 .bottom a .ic{color:var(--primary)}
 
 /* 우측 도구 */
-#dock{position:fixed;right:28px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--surface);border-radius:28px;box-shadow:var(--shadow-lift);z-index:25}
-#dock button,#dock a{width:76px;height:76px;border-radius:20px;border:0;text-decoration:none;background:var(--primary-soft);color:var(--primary);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0}
-#dock button small,#dock a small{font-family:var(--f-label);font-size:1.05rem;font-weight:400;color:var(--primary-deep);white-space:nowrap}
+#dock,#dockL{position:fixed;right:28px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;padding:10px;background:var(--surface);border-radius:28px;box-shadow:var(--shadow-lift);z-index:25}
+#dock button,#dock a,#dockL button{width:76px;height:76px;border-radius:20px;border:0;text-decoration:none;background:var(--primary-soft);color:var(--primary);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0}
+#dock button small,#dock a small,#dockL button small{font-family:var(--f-label);font-size:1.05rem;font-weight:400;color:var(--primary-deep);white-space:nowrap}
 #dock button.on{background:var(--primary);color:#fff}#dock button.on small{color:#fff}
+#dockL{right:auto;left:28px}
+#dockL button.h2{background:var(--gold);color:var(--gold-deep)}#dockL button.h2 small{color:var(--gold-deep)}
+/* 진도계획 */
+.plan{padding:18px 20px}
+.pu{border-radius:18px;background:var(--paper);margin:0 0 12px;overflow:hidden}
+.pu>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:12px;padding:14px 18px;font-size:1.25rem;min-height:56px}
+.pu>summary::-webkit-details-marker{display:none}
+.pu>summary::before{content:'\25B8';color:var(--primary);transition:transform .15s}
+.pu[open]>summary::before{transform:rotate(90deg)}
+.pu .un{flex:1}
+.pu .cnt{font-size:.95rem;color:var(--primary-deep);background:var(--primary-soft);border-radius:999px;padding:2px 12px}
+.pu .pm{padding:10px 18px 4px;color:var(--primary-deep);font-size:1.05rem;border-top:1px dashed var(--line)}
+.ps{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 18px;flex-wrap:wrap}
+.ps .mk{color:var(--primary);flex:none}
+.ps .pt{flex:1;min-width:180px}
+.ps .hr{font-size:.85rem;color:var(--muted);flex:none}
+.ps .dch{font-size:.8rem;background:var(--gold);color:var(--gold-deep);border:0;border-radius:999px;padding:3px 10px;min-height:0;cursor:pointer}
+.pbtn{width:46px;height:46px;min-height:46px;border-radius:50%;border:0;background:#fff;color:var(--muted);display:grid;place-items:center;padding:0;box-shadow:var(--shadow-card);flex:none}
+.pbtn.on{background:var(--primary);color:#fff}
+.crumb{color:var(--muted);margin:0 0 10px}
 #tool{position:fixed;right:132px;top:50%;transform:translateY(-50%);width:min(380px,calc(100vw - 170px));max-height:80vh;overflow:auto;z-index:25;background:var(--surface);border-radius:24px;padding:22px;box-shadow:var(--shadow-lift)}
 #tool h3{margin:0 0 8px;font:700 1.25rem/1.3 var(--f-body)}
 .big{font:700 3.4rem/1.2 var(--serif);text-align:center;margin:10px 0}
@@ -199,6 +219,10 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
   .row>div[style*="flex:0 0"]{min-width:0}
   .bottom{position:static;margin:20px 0 0;padding:0 14px 96px;gap:8px}
   .bottom a{padding:11px 16px;font-size:1.1rem}
+  body.teacher{padding-bottom:176px}
+  .ps{flex-wrap:nowrap;gap:8px;padding:6px 10px 6px 14px}.ps .pt{min-width:0;font-size:1rem}.ps .hr{display:none}.ps .dch{display:none}.pu>summary{font-size:1.1rem;padding:12px 14px}
+  #dockL{left:12px;right:12px;bottom:92px;top:auto;transform:none;flex-direction:row;justify-content:space-around;padding:8px;border-radius:24px}
+  #dockL button{width:64px;height:64px;border-radius:18px}
   #dock{left:12px;right:12px;bottom:12px;top:auto;transform:none;flex-direction:row;justify-content:space-around;padding:8px;border-radius:24px}
   #dock button,#dock a{width:64px;height:64px;border-radius:18px}
   #tool{left:12px;right:12px;bottom:96px;top:auto;transform:none;width:auto;max-height:55vh}
@@ -379,9 +403,14 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
   <button data-tool="timer"><span data-ic="timer" data-s="26"></span><small>타이머</small></button>
   <button data-tool="bgm" id="bgmBtn"><span data-ic="music" data-s="26"></span><small>음악</small></button>
 </div>
+<div id="dockL" class="hidden">
+  <button data-plan="h1" class="h1"><span data-ic="book" data-s="26"></span><small>역사1</small></button>
+  <button data-plan="h2" class="h2"><span data-ic="book" data-s="26"></span><small>역사2</small></button>
+</div>
 <div id="tool" class="hidden"></div>
 <div id="bgmHolder" style="position:fixed;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
 
+<script src="plan-data.js"></script>
 <script>
 /* ===== 설정 (설정방법.md 참고) ===== */
 var CONFIG = {
@@ -408,6 +437,7 @@ function setTeacherUI(on) {
   S.token = on ? 'fb' : '';
   $('#btnLogin').innerHTML = ic('lock', 18) + (on ? '로그아웃' : '선생님'); document.body.classList.toggle('teacher', on);
   $('#dock').classList.toggle('hidden', !on);
+  $('#dockL').classList.toggle('hidden', !on);
 }
 function logout() { closeTool(); setTeacherUI(false); auth.signOut().then(function () { return auth.signInAnonymously(); }); }
 function pad2(n) { return ('0' + n).slice(-2); }
@@ -463,6 +493,54 @@ function safe(u) { return /^https?:\/\//i.test(u || '') ? u : ''; }
 function api(action, p) {
   p = p || {};
   return ready.then(function () { return route(action, p); });
+}
+/* 수업·진도계획 공용: 입력 내용(글·링크·HTML 파일)을 기존 내용과 합쳐 저장할 객체를 만든다 */
+function mergeLesson(old, p, base) {
+  var L = p.links || {}, links = { intro: '', video: safe(L.video), summary: safe(L.summary), worksheet: '', activity: safe(L.activity) };
+  var les = Object.assign({}, base, { title: String(p.title || '').slice(0, 100), body: '', summaryText: String(p.summaryText || '').slice(0, 2000), activityText: String(p.activityText || '').slice(0, 2000), previewText: String(p.previewText || '').slice(0, 3000), links: links });
+  var tasks = [], F = p.files || {};
+  links.worksheet = old && old.links && old.links.worksheet ? old.links.worksheet : '';
+  ['worksheet', 'summary', 'activity'].forEach(function (kind) {
+    var fld = kind + 'Html', oldF = old && old[fld] ? old[fld] : null, req = F[kind] || {};
+    if (oldF) les[fld] = oldF;
+    if (req.html) {
+      if (String(req.html).length > 4000000) throw new Error('HTML 파일이 너무 커요. 4MB 이하로 올려 주세요.');
+      var nr = db.ref('htmlfiles').push(), nm = String(req.name || (kind + '.html')).slice(0, 100);
+      tasks.push(nr.set({ name: nm, html: String(req.html) }));
+      if (oldF) tasks.push(db.ref('htmlfiles/' + oldF.id).remove());
+      les[fld] = { id: nr.key, name: nm }; if (kind === 'worksheet') links.worksheet = '';
+    } else if (req.remove) {
+      if (oldF) tasks.push(db.ref('htmlfiles/' + oldF.id).remove());
+      delete les[fld]; if (kind === 'worksheet') links.worksheet = '';
+    }
+  });
+  return { les: les, tasks: tasks };
+}
+/* 진도계획의 내용을 선택한 날짜의 수업(역사1/역사2)으로 한꺼번에 똑같이 등록 */
+async function assignPlanImpl(p) {
+  var date = String(p.date), slot = String(p.subject) === 'h2' ? 2 : 1;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('날짜를 선택해 주세요.');
+  var plan = (await db.ref('plans/' + p.subject + '/' + p.sid).once('value')).val();
+  if (!plan) throw new Error('진도계획에 입력한 내용이 없어요. 먼저 내용을 입력해 주세요.');
+  var slots = slotsOf((await db.ref('lessons/' + date).once('value')).val()), norm = {};
+  if (slots[1]) norm[1] = slots[1]; if (slots[2]) norm[2] = slots[2];
+  var kinds = ['worksheet', 'summary', 'activity'], tasks = [], old = norm[slot];
+  if (old) kinds.forEach(function (k) { if (old[k + 'Html']) tasks.push(db.ref('htmlfiles/' + old[k + 'Html'].id).remove()); });
+  var nl = JSON.parse(JSON.stringify(plan)); delete nl.sid; delete nl.dates;
+  nl.date = date; nl.slot = slot; nl.title = nl.title || String(p.title || '').slice(0, 100); nl.fromPlan = p.sid;
+  for (var i = 0; i < kinds.length; i++) {
+    var h = plan[kinds[i] + 'Html']; if (!h) continue;
+    var f = (await db.ref('htmlfiles/' + h.id).once('value')).val();
+    if (!f) { delete nl[kinds[i] + 'Html']; continue; }
+    var nr = db.ref('htmlfiles').push(); tasks.push(nr.set({ name: f.name, html: f.html })); nl[kinds[i] + 'Html'] = { id: nr.key, name: h.name };
+  }
+  norm[slot] = nl;
+  var dates = (plan.dates || []).filter(function (d) { return d !== date + '|' + slot; }); dates.push(date + '|' + slot);
+  tasks.push(db.ref('lessons/' + date).set(norm));
+  tasks.push(db.ref('plans/' + p.subject + '/' + p.sid + '/dates').set(dates));
+  await Promise.all(tasks);
+  backend('log', { type: '수업', date: date, title: '[역사' + slot + ' 진도계획 등록] ' + (nl.title || ''), body: '', extra: {} }).catch(function () {});
+  return { ok: true };
 }
 async function moveLessonImpl(p) {
   var fd = String(p.fromDate), td = String(p.toDate), fs = Number(p.fromSlot) === 2 ? 2 : 1, ts = Number(p.toSlot) === 2 ? 2 : 1, copy = p.mode === 'copy';
@@ -527,35 +605,35 @@ function route(action, p) {
       });
     case 'saveLesson':
       var slot = Number(p.slot) === 2 ? 2 : 1;
-      var L = p.links || {}, links = { intro: '', video: safe(L.video), summary: safe(L.summary), worksheet: '', activity: safe(L.activity) };
-      var les = { date: p.date, slot: slot, title: String(p.title || '').slice(0, 100), body: String(p.body || '').slice(0, 2000), summaryText: String(p.summaryText || '').slice(0, 2000), activityText: String(p.activityText || '').slice(0, 2000), previewText: String(p.previewText || '').slice(0, 3000), links: links };
       return db.ref('lessons/' + p.date).once('value').then(function (s) {
-        var upd = slotsOf(s.val()), old = upd[slot] || null, tasks = [], F = p.files || {};
-        upd = { 1: upd[1] || null, 2: upd[2] || null };
-        links.worksheet = old && old.links && old.links.worksheet ? old.links.worksheet : '';
-        ['worksheet', 'summary', 'activity'].forEach(function (kind) {
-          var fld = kind + 'Html', oldF = old && old[fld] ? old[fld] : null, req = F[kind] || {};
-          if (oldF) les[fld] = oldF;
-          if (req.html) {
-            if (String(req.html).length > 4000000) throw new Error('HTML 파일이 너무 커요. 4MB 이하로 올려 주세요.');
-            var nr = db.ref('htmlfiles').push(), nm = String(req.name || (kind + '.html')).slice(0, 100);
-            tasks.push(nr.set({ name: nm, html: String(req.html) }));
-            if (oldF) tasks.push(db.ref('htmlfiles/' + oldF.id).remove());
-            les[fld] = { id: nr.key, name: nm }; if (kind === 'worksheet') links.worksheet = '';
-          } else if (req.remove) {
-            if (oldF) tasks.push(db.ref('htmlfiles/' + oldF.id).remove());
-            delete les[fld]; if (kind === 'worksheet') links.worksheet = '';
-          }
-        });
-        upd[slot] = les;
+        var upd = slotsOf(s.val()), old = upd[slot] || null;
+        var mg = mergeLesson(old, p, { date: p.date, slot: slot });
+        upd = { 1: upd[1] || null, 2: upd[2] || null }; upd[slot] = mg.les;
         if (!upd[1]) delete upd[1]; if (!upd[2]) delete upd[2];
-        tasks.push(db.ref('lessons/' + p.date).set(upd));
-        return Promise.all(tasks);
-      }).then(function () {
+        mg.tasks.push(db.ref('lessons/' + p.date).set(upd));
+        return Promise.all(mg.tasks).then(function () { return mg.les; });
+      }).then(function (les) {
         var hs = ['summary', 'worksheet', 'activity'].filter(function (x) { return les[x + 'Html']; });
-        backend('log', { type: '수업', date: p.date, title: '[역사' + slot + '] ' + les.title + (hs.length ? ' [HTML ' + hs.join('/') + ']' : ''), body: les.body, extra: links }).catch(function () {});
+        backend('log', { type: '수업', date: p.date, title: '[역사' + slot + '] ' + les.title + (hs.length ? ' [HTML ' + hs.join('/') + ']' : ''), body: les.body, extra: les.links }).catch(function () {});
         return { ok: true };
       });
+    case 'getPlans':
+      return db.ref('plans/' + p.subject).once('value').then(function (s) {
+        var o = val(s), out = {};
+        Object.keys(o).forEach(function (k) { var v = o[k]; out[k] = { filled: !!(v.title || v.previewText || v.summaryText || v.activityText || v.summaryHtml || v.worksheetHtml || v.activityHtml || (v.links && (v.links.video || v.links.summary || v.links.activity))), dates: v.dates || [] }; });
+        return { ok: true, plans: out };
+      });
+    case 'getPlan':
+      return db.ref('plans/' + p.subject + '/' + p.sid).once('value').then(function (s) { return { ok: true, plan: s.val() }; });
+    case 'savePlan':
+      return db.ref('plans/' + p.subject + '/' + p.sid).once('value').then(function (s) {
+        var old = s.val(), mg = mergeLesson(old, p, { sid: p.sid });
+        if (old && old.dates) mg.les.dates = old.dates;
+        mg.tasks.push(db.ref('plans/' + p.subject + '/' + p.sid).set(mg.les));
+        return Promise.all(mg.tasks);
+      }).then(function () { return { ok: true }; });
+    case 'assignPlan':
+      return assignPlanImpl(p);
     case 'getRoom':
       return db.ref('rooms/' + p.room).once('value').then(function (s) {
         var o = val(s), items = Object.keys(o).map(function (k) { var v = o[k]; v.seq = k; return v; }).sort(function (a, b) { return (b.t || 0) - (a.t || 0); });
@@ -681,42 +759,88 @@ function calendarView(ym) {
     $('.cal').onclick = function (e) { var b = e.target.closest('.d[data-d]'); if (!b) return; var sl = e.target.closest('[data-slot]'), dy = r.days[b.dataset.d]; lessonView(b.dataset.d, sl ? Number(sl.dataset.slot) : (dy && !dy[1] && dy[2] ? 2 : 1)); };
   }).catch(function (e) { $('#view').innerHTML = vhead('') + '<div class="panel"><div class="msg err">' + esc(e.message) + '</div></div>'; });
 }
+/* ---------- 수업/진도계획 공용 부품 ---------- */
+function showText(title, text) {
+  var m = modal('<h3></h3><div class="readtext"></div><button class="btn" style="width:100%;margin-top:14px">닫기</button>');
+  m.querySelector('h3').textContent = title; m.querySelector('.readtext').textContent = text;
+  m.querySelector('.box').style.width = 'min(720px,100%)'; m.querySelector('.btn').onclick = function () { m.remove(); };
+}
+/* 도입·수업 내용·수업 활동 3개 카드 (학생이 보는 화면과 같은 모양) */
+function lessonCards(L) {
+  L = L || {}; var k = L.links || {};
+  function tile(url, ico, t, tone) { return url ? '<a class="tile ' + tone + '" href="' + esc(safe(url)) + '" target="_blank" rel="noopener"><span class="badge">' + ic(ico, 28) + '</span>' + t + '</a>' : '<div class="tile off ' + tone + '"><span class="badge">' + ic(ico, 28) + '</span>' + t + '<small>준비 중</small></div>'; }
+  function pvTile() {
+    return L.previewText ? '<button class="tile t-plum" data-pv="1"><span class="badge">' + ic('eye', 28) + '</span>수업 미리보기</button>' : '<div class="tile off t-plum"><span class="badge">' + ic('eye', 28) + '</span>수업 미리보기<small>준비 중</small></div>';
+  }
+  function txtTile(kind, ico, label, tone) {
+    return L[kind + 'Text'] ? '<button class="tile ' + tone + '" data-txt="' + kind + '"><span class="badge">' + ic(ico, 28) + '</span>' + label + '</button>' : '';
+  }
+  function tiles2(kind, ico, label, tone, link, hasText) {
+    var h = L[kind + 'Html'], out = '';
+    if (h) out += '<button class="tile ' + tone + '" data-wh="' + esc(h.id) + '" data-name="' + esc(h.name) + '"><span class="badge">' + ic(ico, 28) + '</span>' + (link ? label + ' (HTML)' : label) + '</button>';
+    if (link || (!h && !hasText)) out += tile(link, ico, label, tone);
+    return out;
+  }
+  function sec(n, name, desc, tiles) { return '<div class="secard"><div class="sh"><span class="num">' + n + '</span><h3>' + name + '</h3></div><p>' + desc + '</p>' + tiles + '</div>'; }
+  return '<div class="secs">' +
+    sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', '<div class="tilerow">' + pvTile() + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
+    sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', txtTile('summary', 'book', '내용 정리 보기', 't-green') + tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary, !!L.summaryText) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
+    sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', txtTile('activity', 'target', '활동 내용 보기', 't-coral') + tiles2('activity', 'target', '수업 활동', 't-coral', k.activity, !!L.activityText)) + '</div>';
+}
+function bindLessonCards(L) {
+  document.querySelectorAll('[data-pv]').forEach(function (b) { b.onclick = function () { showText('수업 미리보기', L.previewText); }; });
+  document.querySelectorAll('[data-txt]').forEach(function (b) { b.onclick = function () { var kd = b.dataset.txt; showText(kd === 'summary' ? '내용 정리' : '수업 활동', L[kd + 'Text']); }; });
+  document.querySelectorAll('[data-wh]').forEach(function (b) { b.onclick = function () { openHtml(b.dataset.wh, b.dataset.name); }; });
+}
+/* 입력 양식(제목·내용·링크·HTML 파일) */
+function lessonFormHtml(L, titleDefault) {
+  L = L || {}; var k = L.links || {};
+  return '<label>제목</label><input id="lt" value="' + esc(L.title || titleDefault || '') + '">' +
+    ['intro|', 'summary|내용 정리 링크', 'worksheet|학습지', 'activity|수업 활동 링크'].map(function (x) {
+      var a = x.split('|'), kind = a[0];
+      function fileField(label, legacy) {
+        var cur = L[kind + 'Html'];
+        return '<label>' + label + ' (HTML 파일, 4MB 이하)</label>' +
+          (cur ? '<div style="margin:2px 0 8px">현재 파일: <b>' + esc(cur.name) + '</b> <label style="margin-left:10px"><input id="rm_' + kind + '" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">파일 삭제</label></div>'
+            : (legacy ? '<div style="margin:2px 0 8px">기존 학습지 링크가 연결되어 있어요. <label style="margin-left:10px"><input id="rm_' + kind + '" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">링크 삭제</label></div>' : '')) +
+          '<input id="f_' + kind + '" type="file" accept=".html,.htm,text/html"><div style="color:var(--muted);font-size:.9rem;margin:-6px 0 10px">' + (cur || legacy ? '새 파일을 고르면 지금 파일이 바뀌어요.' : 'HTML 파일을 올려 주세요.') + '</div>';
+      }
+      if (kind === 'worksheet') return fileField('학습지', k.worksheet);
+      return (kind === 'intro' ? '' : '<label>' + a[1] + '</label><input id="l_' + kind + '" placeholder="https://" value="' + esc(k[kind]) + '">') +
+        (kind === 'intro' ? '<label>수업 미리보기 내용 (선택)</label><textarea id="l_previewText" rows="6" placeholder="학생들이 아이콘을 눌러 볼 수업 미리보기 내용을 적어 주세요.">' + esc(L.previewText) + '</textarea><label>수업 관련 영상 링크</label><input id="l_video" placeholder="https://" value="' + esc(k.video) + '">' : '') +
+        (kind === 'summary' ? '<label>내용 정리 내용 입력 (선택)</label><textarea id="l_summaryText" rows="5" placeholder="학생들이 볼 내용 정리를 적어 주세요.">' + esc(L.summaryText) + '</textarea>' + fileField('내용 정리', '')
+          : kind === 'activity' ? '<label>수업 활동 내용 입력 (선택)</label><textarea id="l_activityText" rows="5" placeholder="학생들이 할 수업 활동 내용을 적어 주세요.">' + esc(L.activityText) + '</textarea>' + fileField('수업 활동', '') : '');
+    }).join('');
+}
+/* 양식에 입력한 값을 읽어 저장용 자료로 만든다(HTML 파일은 글자로 읽음) */
+function readLessonForm(m) {
+  var kinds = ['worksheet', 'summary', 'activity'], files = {}, reads = [], tooBig = false;
+  kinds.forEach(function (kind) {
+    var f = $('#f_' + kind, m).files[0], rm = $('#rm_' + kind, m);
+    files[kind] = { remove: !!(rm && rm.checked) };
+    if (f) {
+      if (f.size > 4 * 1024 * 1024) { tooBig = true; return; }
+      reads.push(new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { files[kind].html = fr.result; files[kind].name = f.name; res(); }; fr.onerror = function () { rej(new Error('파일을 읽지 못했어요.')); }; fr.readAsText(f, 'utf-8'); }));
+    }
+  });
+  if (tooBig) return Promise.reject(new Error('파일이 너무 커요. 4MB 이하로 올려 주세요.'));
+  return Promise.all(reads).then(function () {
+    return { title: $('#lt', m).value, summaryText: $('#l_summaryText', m).value, activityText: $('#l_activityText', m).value, previewText: $('#l_previewText', m).value, files: files,
+      links: { video: $('#l_video', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } };
+  });
+}
+
 function lessonView(date, slot) {
   slot = Number(slot) === 2 ? 2 : 1;
   show('view'); $('#view').innerHTML = '<div class="panel"><div class="msg">불러오는 중…</div></div>';
   api('getLesson', { date: date, slot: slot }).then(function (r) {
-    var L = r.lesson || { title: '', body: '', links: {} }, k = L.links || {};
-    function tile(url, ico, t, tone) { return url ? '<a class="tile ' + tone + '" href="' + esc(safe(url)) + '" target="_blank" rel="noopener"><span class="badge">' + ic(ico, 28) + '</span>' + t + '</a>' : '<div class="tile off ' + tone + '"><span class="badge">' + ic(ico, 28) + '</span>' + t + '<small>준비 중</small></div>'; }
-    function pvTile() {
-      return L.previewText ? '<button class="tile t-plum" data-pv="1"><span class="badge">' + ic('eye', 28) + '</span>수업 미리보기</button>' : '<div class="tile off t-plum"><span class="badge">' + ic('eye', 28) + '</span>수업 미리보기<small>준비 중</small></div>';
-    }
-    function txtTile(kind, ico, label, tone) {
-      return L[kind + 'Text'] ? '<button class="tile ' + tone + '" data-txt="' + kind + '"><span class="badge">' + ic(ico, 28) + '</span>' + label + '</button>' : '';
-    }
-    function tiles2(kind, ico, label, tone, link, hasText) {
-      var h = L[kind + 'Html'], out = '';
-      if (h) out += '<button class="tile ' + tone + '" data-wh="' + esc(h.id) + '" data-name="' + esc(h.name) + '"><span class="badge">' + ic(ico, 28) + '</span>' + (link ? label + ' (HTML)' : label) + '</button>';
-      if (link || (!h && !hasText)) out += tile(link, ico, label, tone);
-      return out;
-    }
-    function sec(n, name, desc, tiles) { return '<div class="secard"><div class="sh"><span class="num">' + n + '</span><h3>' + name + '</h3></div><p>' + desc + '</p>' + tiles + '</div>'; }
+    var L = r.lesson || { title: '', body: '', links: {} };
     var dd = date.split('-'), ttl = Number(dd[1]) + '월 ' + Number(dd[2]) + '일' + (L.title ? ' · ' + esc(L.title) : '');
     var tabs = [1, 2].map(function (n) { return '<button class="chip' + (n === slot ? ' on' : '') + '" data-tab="' + n + '">' + ic('book', 18) + '역사' + n + (r.slots[n] ? '' : '<small style="opacity:.6">·비어 있음</small>') + '</button>'; }).join('');
     $('#view').innerHTML = vhead(ttl, '<span class="tabs">' + tabs + '</span>' + (S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' + (r.lesson ? '<button class="chip soft" id="mv">' + ic('move', 18) + '옮기기·복사</button>' : '') : ''), '달력', 'bk') +
-      '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 역사' + slot + ' 수업이 없어요.') + '</p>' +
-      '<div class="secs">' +
-      sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', '<div class="tilerow">' + pvTile() + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
-      sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', txtTile('summary', 'book', '내용 정리 보기', 't-green') + tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary, !!L.summaryText) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
-      sec(3, '수업 활동', '배운 내용을 활동으로 확인해요', txtTile('activity', 'target', '활동 내용 보기', 't-coral') + tiles2('activity', 'target', '수업 활동', 't-coral', k.activity, !!L.activityText)) + '</div>';
+      '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 역사' + slot + ' 수업이 없어요.') + '</p>' + lessonCards(L);
     $('#bk').onclick = function () { calendarView(S.ym); };
-    function showText(title, text) {
-      var m = modal('<h3></h3><div class="readtext"></div><button class="btn" style="width:100%;margin-top:14px">닫기</button>');
-      m.querySelector('h3').textContent = title; m.querySelector('.readtext').textContent = text;
-      m.querySelector('.box').style.width = 'min(720px,100%)'; m.querySelector('.btn').onclick = function () { m.remove(); };
-    }
-    document.querySelectorAll('[data-pv]').forEach(function (b) { b.onclick = function () { showText('수업 미리보기', L.previewText); }; });
-    document.querySelectorAll('[data-txt]').forEach(function (b) { b.onclick = function () { var kd = b.dataset.txt; showText(kd === 'summary' ? '내용 정리' : '수업 활동', L[kd + 'Text']); }; });
-    document.querySelectorAll('[data-wh]').forEach(function (b) { b.onclick = function () { openHtml(b.dataset.wh, b.dataset.name); }; });
+    bindLessonCards(L);
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { lessonView(date, Number(b.dataset.tab)); }; });
     if (S.token && r.lesson) $('#mv').onclick = function () {
       var m = modal('<h3>수업 옮기기·복사</h3><p style="margin:0 0 8px;color:var(--muted)">지금 수업: ' + esc(date) + ' · 역사' + slot + (L.title ? ' · ' + esc(L.title) : '') + '</p>' +
@@ -738,45 +862,90 @@ function lessonView(date, slot) {
       };
     };
     if (S.token) $('#ed').onclick = function () {
-      var m = modal('<h3>' + esc(date) + ' 역사' + slot + ' 등록</h3><label>제목</label><input id="lt" value="' + esc(L.title) + '">' +
-        ['intro|', 'summary|내용 정리 링크', 'worksheet|학습지', 'activity|수업 활동 링크'].map(function (x) {
-          var a = x.split('|'), kind = a[0];
-          function fileField(label, legacy) {
-            var cur = L[kind + 'Html'];
-            return '<label>' + label + ' (HTML 파일, 4MB 이하)</label>' +
-              (cur ? '<div style="margin:2px 0 8px">현재 파일: <b>' + esc(cur.name) + '</b> <label style="margin-left:10px"><input id="rm_' + kind + '" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">파일 삭제</label></div>'
-                : (legacy ? '<div style="margin:2px 0 8px">기존 학습지 링크가 연결되어 있어요. <label style="margin-left:10px"><input id="rm_' + kind + '" type="checkbox" style="width:auto;margin:0 6px 0 0;vertical-align:middle">링크 삭제</label></div>' : '')) +
-              '<input id="f_' + kind + '" type="file" accept=".html,.htm,text/html"><div style="color:var(--muted);font-size:.9rem;margin:-6px 0 10px">' + (cur || legacy ? '새 파일을 고르면 지금 파일이 바뀌어요.' : 'HTML 파일을 올려 주세요.') + '</div>';
-          }
-          if (kind === 'worksheet') return fileField('학습지', k.worksheet);
-          return (kind === 'intro' ? '' : '<label>' + a[1] + '</label><input id="l_' + kind + '" placeholder="https://" value="' + esc(k[kind]) + '">') +
-            (kind === 'intro' ? '<label>수업 미리보기 내용 (선택)</label><textarea id="l_previewText" rows="6" placeholder="학생들이 아이콘을 눌러 볼 수업 미리보기 내용을 적어 주세요.">' + esc(L.previewText) + '</textarea><label>수업 관련 영상 링크</label><input id="l_video" placeholder="https://" value="' + esc(k.video) + '">' : '') +
-            (kind === 'summary' ? '<label>내용 정리 내용 입력 (선택)</label><textarea id="l_summaryText" rows="5" placeholder="학생들이 볼 내용 정리를 적어 주세요.">' + esc(L.summaryText) + '</textarea>' + fileField('내용 정리', '')
-              : kind === 'activity' ? '<label>수업 활동 내용 입력 (선택)</label><textarea id="l_activityText" rows="5" placeholder="학생들이 할 수업 활동 내용을 적어 주세요.">' + esc(L.activityText) + '</textarea>' + fileField('수업 활동', '') : '');
-        }).join('') +
-        '<div id="le" class="msg"></div><button class="btn" id="ls" style="width:100%">저장</button>');
+      var m = modal('<h3>' + esc(date) + ' 역사' + slot + ' 등록</h3>' + lessonFormHtml(L) + '<div id="le" class="msg"></div><button class="btn" id="ls" style="width:100%">저장</button>');
       $('#ls', m).onclick = function () {
-        var btn = this, kinds = ['worksheet', 'summary', 'activity'], files = {}, reads = [];
-        for (var q = 0; q < kinds.length; q++) {
-          (function (kind) {
-            var f = $('#f_' + kind, m).files[0], rm = $('#rm_' + kind, m);
-            files[kind] = { remove: !!(rm && rm.checked) };
-            if (f) {
-              if (f.size > 4 * 1024 * 1024) { files = null; return; }
-              reads.push(new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { files[kind].html = fr.result; files[kind].name = f.name; res(); }; fr.onerror = function () { rej(new Error('파일을 읽지 못했어요.')); }; fr.readAsText(f, 'utf-8'); }));
-            }
-          })(kinds[q]);
-          if (!files) { msg($('#le', m), '파일이 너무 커요. 4MB 이하로 올려 주세요.'); return; }
-        }
-        btn.disabled = true; msg($('#le', m), reads.length ? '파일을 올리는 중…' : '저장 중…', true);
-        Promise.all(reads).then(function () {
-          return api('saveLesson', { date: date, slot: slot, title: $('#lt', m).value, body: '', summaryText: $('#l_summaryText', m).value, activityText: $('#l_activityText', m).value, previewText: $('#l_previewText', m).value, files: files,
-            links: { video: $('#l_video', m).value, summary: $('#l_summary', m).value, activity: $('#l_activity', m).value } });
-        }).then(function () { m.remove(); lessonView(date, slot); }).catch(function (e) { msg($('#le', m), e.message); btn.disabled = false; });
+        var btn = this; btn.disabled = true; msg($('#le', m), '저장 중…', true);
+        readLessonForm(m).then(function (pl) { return api('saveLesson', Object.assign({ date: date, slot: slot }, pl)); })
+          .then(function () { m.remove(); lessonView(date, slot); }).catch(function (e) { msg($('#le', m), e.message); btn.disabled = false; });
       };
     };
   }).catch(function (e) { $('#view').innerHTML = vhead('') + '<div class="panel"><div class="msg err">' + esc(e.message) + '</div></div>'; });
 }
+
+/* ---------- 진도계획 (역사1·역사2) ---------- */
+function planInfo(sj, sid) {
+  var P = PLAN_DATA[sj];
+  for (var a = 0; a < P.units.length; a++) for (var b = 0; b < P.units[a].mids.length; b++) for (var c = 0; c < P.units[a].mids[b].smalls.length; c++)
+    if (P.units[a].mids[b].smalls[c].id === sid) return { u: P.units[a], m: P.units[a].mids[b], s: P.units[a].mids[b].smalls[c] };
+  return null;
+}
+function planView(sj) {
+  var P = PLAN_DATA[sj]; closeTool();
+  show('view'); $('#view').innerHTML = '<div class="panel"><div class="msg">불러오는 중…</div></div>';
+  api('getPlans', { subject: sj }).then(function (r) {
+    var pl = r.plans, h = '';
+    P.units.forEach(function (u) {
+      var n = 0, f = 0; u.mids.forEach(function (m) { m.smalls.forEach(function (sm) { n++; if (pl[sm.id] && pl[sm.id].filled) f++; }); });
+      h += '<details class="pu" data-u="' + u.id + '"' + (S.planOpen === u.id ? ' open' : '') + '><summary><span class="un">' + esc(u.title) + '</span><span class="cnt">입력 ' + f + '/' + n + '</span></summary>';
+      u.mids.forEach(function (m) {
+        h += '<div class="pm">' + esc(m.title) + '</div>';
+        m.smalls.forEach(function (sm) {
+          var st = pl[sm.id] || { filled: false, dates: [] };
+          h += '<div class="ps"><span class="mk">' + esc(sm.mark) + '</span><span class="pt">' + esc(sm.title) + '</span><span class="hr">' + esc(sm.hours) + '차시</span>' +
+            (st.dates || []).map(function (d) { var a = d.split('|'); return '<button class="dch" data-ld="' + esc(d) + '">' + Number(a[0].slice(5, 7)) + '/' + Number(a[0].slice(8)) + ' 등록</button>'; }).join('') +
+            '<button class="pbtn' + (st.filled ? ' on' : '') + '" data-sid="' + esc(sm.id) + '" aria-label="열기" title="열기">' + ic(st.filled ? 'filetext' : 'pen', 22) + '</button></div>';
+        });
+      });
+      h += '</details>';
+    });
+    $('#view').innerHTML = vhead(esc(P.name) + ' 진도계획') + '<div class="panel plan"><p class="lead" style="margin-top:0">소단원 옆 아이콘을 누르면 도입·수업 내용·수업 활동을 입력하고, 원하는 날짜의 오늘의 수업에 한꺼번에 등록할 수 있어요.</p>' + h + '</div>';
+    document.querySelectorAll('.pu').forEach(function (d) { d.addEventListener('toggle', function () { if (d.open) S.planOpen = d.dataset.u; else if (S.planOpen === d.dataset.u) S.planOpen = ''; }); });
+    $('#view').onclick = function (e) {
+      var b = e.target.closest('[data-sid]'); if (b) { planItemView(sj, b.dataset.sid); return; }
+      var d = e.target.closest('[data-ld]'); if (d) { var a = d.dataset.ld.split('|'); lessonView(a[0], Number(a[1])); }
+    };
+  }).catch(function (e) { $('#view').innerHTML = vhead('') + '<div class="panel"><div class="msg err">' + esc(e.message) + '</div></div>'; });
+}
+function planItemView(sj, sid) {
+  var info = planInfo(sj, sid), P = PLAN_DATA[sj], slot = sj === 'h2' ? 2 : 1;
+  S.planOpen = info.u.id;
+  show('view'); $('#view').innerHTML = '<div class="panel"><div class="msg">불러오는 중…</div></div>';
+  api('getPlan', { subject: sj, sid: sid }).then(function (r) {
+    var L = r.plan || { title: '', links: {} };
+    var dates = (L.dates || []).map(function (d) { var a = d.split('|'); return '<button class="dch chip soft" data-ld="' + esc(d) + '">' + a[0].slice(5).replace('-', '/') + ' 수업에 등록됨</button>'; }).join(' ');
+    $('#view').innerHTML = vhead(esc(L.title || info.s.title), '<button class="chip soft" id="ped">' + ic('pen', 18) + '내용 입력·수정</button>' + (r.plan ? '<button class="chip soft" id="pas">' + ic('calendar', 18) + '날짜로 등록</button>' : ''), P.name + ' 진도계획', 'bk') +
+      '<p class="crumb">' + esc(info.u.title) + ' › ' + esc(info.m.title) + ' · ' + esc(info.s.hours) + '차시</p>' + (dates ? '<p style="margin:0 0 10px">' + dates + '</p>' : '') +
+      (r.plan ? '' : '<p class="lead" style="color:var(--muted)">아직 입력한 내용이 없어요. 오른쪽 위 <b>내용 입력·수정</b>을 눌러 보세요.</p>') + lessonCards(L);
+    $('#bk').onclick = function () { planView(sj); };
+    bindLessonCards(L);
+    document.querySelectorAll('[data-ld]').forEach(function (b) { b.onclick = function () { var a = b.dataset.ld.split('|'); lessonView(a[0], Number(a[1])); }; });
+    $('#ped').onclick = function () {
+      var m = modal('<h3>' + esc(P.name) + ' 진도계획 입력</h3><p style="margin:0 0 6px;color:var(--muted)">' + esc(info.s.title) + '</p>' + lessonFormHtml(L, info.s.title) + '<div id="le" class="msg"></div><button class="btn" id="ls" style="width:100%">저장</button>');
+      $('#ls', m).onclick = function () {
+        var btn = this; btn.disabled = true; msg($('#le', m), '저장 중…', true);
+        readLessonForm(m).then(function (pl) { return api('savePlan', Object.assign({ subject: sj, sid: sid }, pl)); })
+          .then(function () { m.remove(); planItemView(sj, sid); }).catch(function (e) { msg($('#le', m), e.message); btn.disabled = false; });
+      };
+    };
+    if (r.plan) $('#pas').onclick = function () {
+      var t = todayStr(); if (t < '2026-01-01' || t > '2027-12-31') t = '2026-03-02';
+      var m = modal('<h3>날짜로 등록</h3><p style="margin:0 0 8px;color:var(--muted)">' + esc(P.name) + ' · ' + esc(info.s.title) + '</p>' +
+        '<label>등록할 날짜</label><input id="ad" type="date" min="2026-01-01" max="2027-12-31" value="' + t + '">' +
+        '<p style="font-size:.95rem;color:var(--muted);margin:0 0 10px">고른 날짜의 <b>' + esc(P.name) + '</b> 수업에 도입·수업 내용·수업 활동이 지금 입력한 그대로 한꺼번에 등록돼요. 이미 등록된 수업이 있으면 덮어써요.</p>' +
+        '<div id="ae" class="msg"></div><button class="btn" id="ab" style="width:100%">' + ic('calendar', 18) + '이 날짜에 등록</button>');
+      $('#ab', m).onclick = function () {
+        var btn = this, d = $('#ad', m).value; if (!d) { msg($('#ae', m), '날짜를 선택해 주세요.'); return; }
+        btn.disabled = true; msg($('#ae', m), '확인 중…', true);
+        api('getLesson', { date: d, slot: slot }).then(function (g) {
+          if (g.lesson && !confirm(d + ' ' + P.name + '에 이미 등록된 수업이 있어요. 덮어쓸까요?')) throw new Error('취소했어요.');
+          msg($('#ae', m), '등록 중…', true);
+          return api('assignPlan', { subject: sj, sid: sid, date: d, title: info.s.title });
+        }).then(function () { m.remove(); lessonView(d, slot); }).catch(function (e) { msg($('#ae', m), e.message); btn.disabled = false; });
+      };
+    };
+  }).catch(function (e) { $('#view').innerHTML = vhead('') + '<div class="panel"><div class="msg err">' + esc(e.message) + '</div></div>'; });
+}
+$('#dockL').onclick = function (e) { var b = e.target.closest('[data-plan]'); if (b) planView(b.dataset.plan); };
 
 /* ---------- 게시판형 방 (사전학습/심화탐구/오늘의 역사) ---------- */
 function openHtml(id, name) {
