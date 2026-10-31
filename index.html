@@ -5,6 +5,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>유쾌한 소정샘의 역사 Class</title>
+<script>
+/* 배포 번호가 바뀌면 자동으로 새 화면을 불러옴 (배포할 때 __BUILD__ 자리에 번호가 들어갑니다) */
+var BUILD = '__BUILD__';
+(function () { try {
+  if (BUILD.charAt(0) === '_' || location.protocol === 'file:') return;
+  fetch('version.json?t=' + Date.now(), { cache: 'no-store' }).then(function (r) { return r.json(); }).then(function (v) {
+    if (!v || !v.build || v.build === BUILD) return;
+    var u = new URL(location.href); if (u.searchParams.get('b') === v.build) return;
+    u.searchParams.set('b', v.build); location.replace(u.toString());
+  }).catch(function () {});
+} catch (e) {} })();
+</script>
 <meta name="application-name" content="소정샘 역사">
 <meta name="apple-mobile-web-app-title" content="소정샘 역사">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -410,7 +422,7 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
 <div id="tool" class="hidden"></div>
 <div id="bgmHolder" style="position:fixed;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
 
-<script src="plan-data.js"></script>
+<script src="plan-data.js?v=__BUILD__"></script>
 <script>
 /* ===== 설정 (설정방법.md 참고) ===== */
 var CONFIG = {

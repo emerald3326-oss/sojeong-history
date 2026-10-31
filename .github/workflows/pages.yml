@@ -23,6 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: 배포 번호 찍기 (브라우저가 예전 화면을 붙들고 있어도 새 화면으로 바꾸기 위함)
+        run: |
+          B="${GITHUB_SHA::10}"
+          sed -i "s/__BUILD__/$B/g" index.html
+          echo "{\"build\":\"$B\"}" > version.json
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
