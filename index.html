@@ -488,7 +488,7 @@ async function moveLessonImpl(p) {
   var save = function (date, slots) { return Object.keys(slots).length ? db.ref('lessons/' + date).set(slots) : db.ref('lessons/' + date).remove(); };
   tasks.push(save(td, toSlots)); if (!copy && fd !== td) tasks.push(save(fd, fromSlots));
   await Promise.all(tasks);
-  backend('log', { type: '수업', date: td, title: '[수업' + ts + (copy ? ' 복사' : ' 이동') + ' ← ' + fd + ' 수업' + fs + '] ' + (nl.title || ''), body: '', extra: {} }).catch(function () {});
+  backend('log', { type: '수업', date: td, title: '[역사' + ts + (copy ? ' 복사' : ' 이동') + ' ← ' + fd + ' 역사' + fs + '] ' + (nl.title || ''), body: '', extra: {} }).catch(function () {});
   return { ok: true };
 }
 function route(action, p) {
@@ -513,7 +513,7 @@ function route(action, p) {
         Object.keys(all).forEach(function (d) {
           if (d.indexOf(p.ym) !== 0) return;
           var sl = slotsOf(all[d]), o = {};
-          [1, 2].forEach(function (k) { if (sl[k]) o[k] = sl[k].title || ('수업 ' + k); });
+          [1, 2].forEach(function (k) { if (sl[k]) o[k] = sl[k].title || ('역사' + k); });
           if (o[1] || o[2]) days[d] = o;
         });
         return { ok: true, days: days, today: todayStr() };
@@ -553,7 +553,7 @@ function route(action, p) {
         return Promise.all(tasks);
       }).then(function () {
         var hs = ['summary', 'worksheet', 'activity'].filter(function (x) { return les[x + 'Html']; });
-        backend('log', { type: '수업', date: p.date, title: '[수업' + slot + '] ' + les.title + (hs.length ? ' [HTML ' + hs.join('/') + ']' : ''), body: les.body, extra: links }).catch(function () {});
+        backend('log', { type: '수업', date: p.date, title: '[역사' + slot + '] ' + les.title + (hs.length ? ' [HTML ' + hs.join('/') + ']' : ''), body: les.body, extra: links }).catch(function () {});
         return { ok: true };
       });
     case 'getRoom':
@@ -672,7 +672,7 @@ function calendarView(ym) {
     for (var n = 1; n <= last; n++) {
       var ds = S.ym + '-' + ('0' + n).slice(-2), dw = (first + n - 1) % 7;
       var dy = r.days[ds] || null;
-      var pills = [1, 2].map(function (k) { return (dy && dy[k]) || S.token ? '<span class="sl s' + k + (dy && dy[k] ? ' on' : '') + '" data-slot="' + k + '" title="' + esc(dy && dy[k] ? dy[k] : '수업 ' + k + ' 등록') + '">' + ic('book', 14) + k + '</span>' : ''; }).join('');
+      var pills = [1, 2].map(function (k) { return (dy && dy[k]) || S.token ? '<span class="sl s' + k + (dy && dy[k] ? ' on' : '') + '" data-slot="' + k + '" title="' + esc(dy && dy[k] ? dy[k] : '역사' + k + ' 등록') + '">' + ic('book', 14) + k + '</span>' : ''; }).join('');
       h += '<button class="d' + (dy ? ' has' : '') + (ds === r.today ? ' today' : '') + (dw === 0 ? ' sun' : dw === 6 ? ' sat' : '') + '" data-d="' + ds + '"><b>' + n + '</b><span class="slots">' + pills + '</span></button>';
     }
     $('#view').innerHTML = vhead('오늘의 수업') + '<div class="panel"><div class="calhead"><button class="circ" id="pm" aria-label="이전 달"' + (y <= 2026 && mo <= 1 ? ' disabled' : '') + '>' + ic('left', 22) + '</button><h2>' + y + '년 ' + mo + '월</h2><button class="circ" id="nm" aria-label="다음 달"' + (y >= 2027 && mo >= 12 ? ' disabled' : '') + '>' + ic('right', 22) + '</button></div><div class="cal">' + h + '</div></div>';
@@ -701,9 +701,9 @@ function lessonView(date, slot) {
     }
     function sec(n, name, desc, tiles) { return '<div class="secard"><div class="sh"><span class="num">' + n + '</span><h3>' + name + '</h3></div><p>' + desc + '</p>' + tiles + '</div>'; }
     var dd = date.split('-'), ttl = Number(dd[1]) + '월 ' + Number(dd[2]) + '일' + (L.title ? ' · ' + esc(L.title) : '');
-    var tabs = [1, 2].map(function (n) { return '<button class="chip' + (n === slot ? ' on' : '') + '" data-tab="' + n + '">' + ic('book', 18) + '수업 ' + n + (r.slots[n] ? '' : '<small style="opacity:.6">·비어 있음</small>') + '</button>'; }).join('');
+    var tabs = [1, 2].map(function (n) { return '<button class="chip' + (n === slot ? ' on' : '') + '" data-tab="' + n + '">' + ic('book', 18) + '역사' + n + (r.slots[n] ? '' : '<small style="opacity:.6">·비어 있음</small>') + '</button>'; }).join('');
     $('#view').innerHTML = vhead(ttl, '<span class="tabs">' + tabs + '</span>' + (S.token ? '<button class="chip soft" id="ed">' + ic('pen', 18) + '수업 등록·수정</button>' + (r.lesson ? '<button class="chip soft" id="mv">' + ic('move', 18) + '옮기기·복사</button>' : '') : ''), '달력', 'bk') +
-      '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 수업 ' + slot + '이 없어요.') + '</p>' +
+      '<p class="lead" style="color:var(--muted)">' + (r.lesson ? '오늘 배울 내용을 순서대로 눌러 보세요' : '아직 등록된 역사' + slot + ' 수업이 없어요.') + '</p>' +
       '<div class="secs">' +
       sec(1, '도입', '수업에 들어가기 전, 미리 수업 내용을 만나요.', '<div class="tilerow">' + pvTile() + tile(k.video, 'video', '수업 관련 영상', 't-slate') + '</div>') +
       sec(2, '수업 내용', '핵심 내용을 정리하고 학습지를 풀어요', txtTile('summary', 'book', '내용 정리 보기', 't-green') + tiles2('summary', 'filetext', '내용 정리', 't-green', k.summary, !!L.summaryText) + tiles2('worksheet', 'clip', '학습지', 't-gold', k.worksheet)) +
@@ -719,9 +719,9 @@ function lessonView(date, slot) {
     document.querySelectorAll('[data-wh]').forEach(function (b) { b.onclick = function () { openHtml(b.dataset.wh, b.dataset.name); }; });
     document.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { lessonView(date, Number(b.dataset.tab)); }; });
     if (S.token && r.lesson) $('#mv').onclick = function () {
-      var m = modal('<h3>수업 옮기기·복사</h3><p style="margin:0 0 8px;color:var(--muted)">지금 수업: ' + esc(date) + ' · 수업 ' + slot + (L.title ? ' · ' + esc(L.title) : '') + '</p>' +
+      var m = modal('<h3>수업 옮기기·복사</h3><p style="margin:0 0 8px;color:var(--muted)">지금 수업: ' + esc(date) + ' · 역사' + slot + (L.title ? ' · ' + esc(L.title) : '') + '</p>' +
         '<label>옮길 날짜</label><input id="md" type="date" min="2026-01-01" max="2027-12-31" value="' + esc(date) + '">' +
-        '<label>어느 수업으로</label><select id="ms"><option value="1">수업 1</option><option value="2">수업 2</option></select>' +
+        '<label>어느 수업으로</label><select id="ms"><option value="1">역사1</option><option value="2">역사2</option></select>' +
         '<label>방식</label><select id="mm"><option value="move">옮기기 (지금 수업은 비워져요)</option><option value="copy">복사 (지금 수업은 그대로 둬요)</option></select>' +
         '<div id="me" class="msg"></div><button class="btn" id="mb" style="width:100%">실행</button>');
       $('#ms', m).value = String(slot === 1 ? 2 : 1);
@@ -731,14 +731,14 @@ function lessonView(date, slot) {
         if (td === date && ts === slot) { msg($('#me', m), '같은 수업이에요. 다른 날짜나 수업을 골라 주세요.'); return; }
         btn.disabled = true; msg($('#me', m), '확인 중…', true);
         api('getLesson', { date: td, slot: ts }).then(function (g) {
-          if (g.lesson && !confirm(td + ' 수업 ' + ts + '에 이미 등록된 수업이 있어요. 덮어쓸까요?')) throw new Error('취소했어요.');
+          if (g.lesson && !confirm(td + ' 역사' + ts + '에 이미 등록된 수업이 있어요. 덮어쓸까요?')) throw new Error('취소했어요.');
           msg($('#me', m), '처리 중…', true);
           return api('moveLesson', { fromDate: date, fromSlot: slot, toDate: td, toSlot: ts, mode: mode });
         }).then(function () { m.remove(); lessonView(td, ts); }).catch(function (e) { msg($('#me', m), e.message); btn.disabled = false; });
       };
     };
     if (S.token) $('#ed').onclick = function () {
-      var m = modal('<h3>' + esc(date) + ' 수업 ' + slot + ' 등록</h3><label>제목</label><input id="lt" value="' + esc(L.title) + '">' +
+      var m = modal('<h3>' + esc(date) + ' 역사' + slot + ' 등록</h3><label>제목</label><input id="lt" value="' + esc(L.title) + '">' +
         ['intro|', 'summary|내용 정리 링크', 'worksheet|학습지', 'activity|수업 활동 링크'].map(function (x) {
           var a = x.split('|'), kind = a[0];
           function fileField(label, legacy) {
