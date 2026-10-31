@@ -250,7 +250,7 @@ button.tile{border:0;width:100%;font-family:var(--f-label);cursor:pointer}
 
 <header class="top">
   <div class="brand"><span class="logo" data-ic="school" data-s="22"></span><h1>유쾌한 소정샘의 역사 Class</h1></div>
-  <div class="acts"><span id="who" class="chip hidden"></span><button id="btnLogin" class="chip"></button></div>
+  <div class="acts"><button id="btnInstall" class="chip soft hidden"><span data-ic="download" data-s="18"></span>앱 설치</button><span id="who" class="chip hidden"></span><button id="btnLogin" class="chip"></button></div>
 </header>
 
 <main class="wrap">
@@ -466,6 +466,7 @@ function slotsOf(v) { if (!v) return {}; return v.title !== undefined ? { 1: v }
 var IC = {
   home: '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
   school: '<path d="m4 6 8-4 8 4"/><path d="m18 10 4 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-8l4-2"/><path d="M14 22v-4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v4"/><path d="M18 5v17"/><path d="M6 5v17"/><circle cx="12" cy="9" r="2"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>', back: '<path d="m12 19-7-7 7-7M19 12H5"/>', left: '<path d="m15 18-6-6 6-6"/>', right: '<path d="m9 18 6-6-6-6"/>',
   lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   book: '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
@@ -1114,6 +1115,22 @@ function toggleBgm() {
 /* 새로고침 시 저장된 정보로 빠른 입장 */
 (function () { try { var m = JSON.parse(ls('sj_me') || 'null'); if (m && m.name) $('.hint').textContent = m.name + ' 학생, 문을 열고 들어오세요'; } catch (e) {} })();
 paintIcons(); setTeacherUI(false); show('entry');
+/* ---------- 앱 설치 (노트북·태블릿·휴대폰) ---------- */
+var deferredInstall = null;
+function isStandalone() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
+window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferredInstall = e; });
+window.addEventListener('appinstalled', function () { deferredInstall = null; $('#btnInstall').classList.add('hidden'); });
+if (!isStandalone()) $('#btnInstall').classList.remove('hidden');
+$('#btnInstall').onclick = function () {
+  if (deferredInstall) { deferredInstall.prompt(); deferredInstall.userChoice.then(function () { deferredInstall = null; }); return; }
+  var ua = navigator.userAgent || '', ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1), android = /Android/.test(ua);
+  var steps = ios ? ['<b>Safari</b>로 이 주소를 엽니다. (다른 브라우저에서는 안 될 수 있어요)', '아래(아이패드는 위) <b>공유</b> 버튼을 누릅니다.', '<b>홈 화면에 추가</b>를 누르고 이름 "소정샘 역사"를 확인한 뒤 <b>추가</b>를 누릅니다.']
+    : android ? ['<b>크롬</b>으로 이 주소를 엽니다.', '오른쪽 위 <b>⋮ 메뉴</b>를 누릅니다.', '<b>앱 설치</b>(또는 <b>홈 화면에 추가</b>)를 누르고 <b>설치</b>를 누릅니다.']
+    : ['<b>크롬</b> 또는 <b>엣지</b>로 이 주소를 엽니다.', '주소창 오른쪽 끝의 <b>설치 아이콘</b>(모니터에 화살표 모양)을 누릅니다. 없으면 오른쪽 위 <b>⋮ 메뉴 → 저장 및 공유 → 앱으로 설치</b>를 누릅니다.', '<b>설치</b>를 누르면 바탕화면과 시작 메뉴에 "소정샘 역사"가 생깁니다.'];
+  var m = modal('<h3>앱 설치 방법</h3><p style="margin:0 0 8px;color:var(--muted)">' + (ios ? '아이폰·아이패드' : android ? '안드로이드' : '노트북·컴퓨터') + '에서는 이렇게 하세요.</p><ol style="margin:0 0 14px;padding-left:22px;line-height:1.7">' + steps.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ol><button class="btn" style="width:100%">알겠어요</button>');
+  m.querySelector('.btn').onclick = function () { m.remove(); };
+};
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(function () {});
 </script>
 </body>
 </html>
