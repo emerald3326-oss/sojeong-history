@@ -1030,7 +1030,29 @@ $('#dockL').onclick = function (e) { var b = e.target.closest('[data-plan]'); if
 /* ---------- 게시판형 방 (사전학습/심화탐구/오늘의 역사) ---------- */
 /* 학습지 안의 답안을 읽어 오는 작은 프로그램(학습지 창 안에서만 동작, 화면의 입력칸·선택칸을 모아 돌려줌) */
 function worksheetCollector() {
+  /* 학습지 안의 '노션에 제출' 아이콘(버튼)을 누르면 바로 제출되게 연결. 없으면 오른쪽 아래에 버튼을 만들어 줌 */
+  var SEL = 'button,a,[role="button"],input[type="button"],input[type="submit"]';
+  function isNotion(t) { var x = ((t.textContent || '') + ' ' + (t.getAttribute('title') || '') + ' ' + (t.getAttribute('aria-label') || '') + ' ' + (t.id || '') + ' ' + (typeof t.className === 'string' ? t.className : '') + ' ' + (t.getAttribute('href') || '') + ' ' + (t.value || '')).toLowerCase(); return x.indexOf('노션') >= 0 || x.indexOf('notion') >= 0; }
+  function toast(text, kind) {
+    var d = document.getElementById('sj-toast');
+    if (!d) { d = document.createElement('div'); d.id = 'sj-toast'; d.style.cssText = 'position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:2147483647;padding:12px 22px;border-radius:999px;font:500 17px/1.4 sans-serif;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.25)'; document.body.appendChild(d); }
+    d.textContent = text; d.style.background = kind === 'err' ? '#C2410C' : kind === 'ok' ? '#2F6B62' : '#1E2A3A'; d.style.display = 'block';
+    clearTimeout(d._t); d._t = setTimeout(function () { d.style.display = 'none'; }, kind === 'busy' ? 20000 : 4000);
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target && e.target.closest ? e.target.closest(SEL) : null;
+    if (t && (isNotion(t) || t.id === 'sj-float')) { e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation(); window.parent.postMessage({ sj: 'submit' }, '*'); }
+  }, true);
+  setTimeout(function () {
+    var found = Array.prototype.some.call(document.querySelectorAll(SEL), isNotion);
+    if (found || document.getElementById('sj-float')) return;
+    var b = document.createElement('button'); b.id = 'sj-float'; b.type = 'button';
+    b.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:8px"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>노션에 제출';
+    b.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:2147483646;padding:14px 24px;border:0;border-radius:999px;background:#2F6B62;color:#fff;font:500 18px sans-serif;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+    document.body.appendChild(b);
+  }, 400);
   window.addEventListener('message', function (e) {
+    if (e.data && e.data.sj === 'toast') { toast(e.data.text, e.data.kind); return; }
     if (!e.data || e.data.sj !== 'collect') return;
     var all = Array.prototype.slice.call(document.querySelectorAll('input,textarea,select')), answers = [], n = 0;
     function label(el) {
@@ -1086,16 +1108,21 @@ function openHtml(id, name, opts) {
     var f = document.createElement('iframe'); f.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups allow-modals'); f.srcdoc = opts.submit ? withCollector(r.html) : r.html; v.appendChild(f);
     v.querySelector('.vcl').onclick = function () { v.remove(); };
     if (opts.submit) {
-      var cnt = 0, st = v.querySelector('.vst'), btn = v.querySelector('.vsub');
-      btn.onclick = function () {
+      var cnt = 0, busy = false, st = v.querySelector('.vst'), btn = v.querySelector('.vsub');
+      var say = function (text, kind) { st.style.color = kind === 'err' ? 'var(--bad)' : kind === 'ok' ? 'var(--ok)' : 'var(--muted)'; st.textContent = text; try { f.contentWindow.postMessage({ sj: 'toast', text: text, kind: kind }, '*'); } catch (e) {} };
+      var submit = function () {
+        if (busy) return;
         var me = S.me || {};
         if (!confirm('지금 쓴 답안을 제출할까요?\n제출하면 선생님 노션에 바로 등록돼요.')) return;
-        btn.disabled = true; st.style.color = 'var(--muted)'; st.textContent = '제출 중…';
+        busy = true; btn.disabled = true; say('제출 중…', 'busy');
         collectWorksheet(f).then(function (c) {
           return api('submitWorksheet', { cls: me.cls, no: me.no, name: me.name, title: title.replace(/\.html?$/i, ''), lesson: S.ctx || '', html: c.html, answers: c.answers });
-        }).then(function () { cnt++; st.style.color = 'var(--ok)'; st.textContent = '제출 완료!' + (cnt > 1 ? ' (' + cnt + '번째)' : ''); btn.lastChild.textContent = '다시 제출'; })
-          .catch(function (e) { st.style.color = 'var(--bad)'; st.textContent = e.message; }).then(function () { btn.disabled = false; });
+        }).then(function () { cnt++; say('제출 완료!' + (cnt > 1 ? ' (' + cnt + '번째)' : ''), 'ok'); btn.lastChild.textContent = '다시 제출'; })
+          .catch(function (e) { say(e.message, 'err'); }).then(function () { busy = false; btn.disabled = false; });
       };
+      btn.onclick = submit;
+      var onMsg = function (e) { if (!document.body.contains(v)) { window.removeEventListener('message', onMsg); return; } if (e.source === f.contentWindow && e.data && e.data.sj === 'submit') submit(); };
+      window.addEventListener('message', onMsg);
     }
     document.body.appendChild(v);
   }).catch(function (e) { alert(e.message); });
