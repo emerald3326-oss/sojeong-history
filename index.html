@@ -1173,8 +1173,11 @@ function aiView() {
 /* ---------- 보고서 제출방 → 노션 ---------- */
 function reportView() {
   show('view'); var m = S.me;
-  $('#view').innerHTML = vhead('보고서 제출방') + '<div class="panel narrow"><p class="lead" style="margin-top:0">링크를 올리면 선생님 노션에 자동으로 등록돼요. (학습지는 수업 화면의 학습지 안에서 <b>제출하기</b>를 눌러 제출해요)</p>' +
+  $('#view').innerHTML = vhead('보고서 제출방') + '<div class="panel narrow"><p class="lead" style="margin-top:0">파일을 올리거나 링크를 제출하세요. 제출한 것은 선생님 노션에 자동으로 등록돼요. (학습지는 수업 화면의 학습지 안에서 <b>제출하기</b>로도 제출할 수 있어요)</p>' +
     '<div class="row"><div style="flex:0 0 150px"><label>학년·반</label><input id="rc" value="' + esc(m.cls) + '"></div><div style="flex:0 0 120px"><label>번호</label><input id="rn" type="number" value="' + esc(m.no) + '"></div><div><label>이름</label><input id="rm" value="' + esc(m.name) + '"></div></div>' +
+    '<h2 style="font-size:1.25rem;margin:10px 0 6px">학습지 파일 올리기</h2><p class="lead" style="margin:0 0 8px">파일을 고르면 <b>올리는 즉시 노션에 제출</b>돼요. 여러 개를 한꺼번에 골라도 하나씩 제출돼요. (파일 하나당 10MB 이하)</p>' +
+    '<label class="drop" for="uf">' + ic('fileup', 30) + '파일 고르기<input id="uf" type="file" multiple></label><div id="ul"></div>' +
+    '<h2 style="font-size:1.25rem;margin:18px 0 6px">링크로 제출하기</h2>' +
     '<label>과제명</label><input id="rt" placeholder="예) 개항기 조약 정리 보고서"><label>제출 링크</label><input id="rl" placeholder="https://">' +
     '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap"><span style="color:var(--primary-deep);font-size:.875rem">' + ic('check', 18) + ' 제출하면 노션 과제 수합표에 바로 기록돼요</span><button class="btn" id="rb">' + ic('send', 20) + '제출하기</button></div><div id="rmsg" class="msg"></div></div>';
   $('#rb').onclick = function () {
@@ -1182,6 +1185,24 @@ function reportView() {
     api('submit', { cls: $('#rc').value, no: $('#rn').value, name: $('#rm').value, title: $('#rt').value, link: $('#rl').value })
       .then(function () { msg($('#rmsg'), '제출 완료! 노션에 등록됐어요.', true); $('#rt').value = ''; $('#rl').value = ''; })
       .catch(function (e) { msg($('#rmsg'), e.message); }).then(function () { b.disabled = false; });
+  };
+  /* 파일을 고르면 바로(자동으로) 노션에 제출 */
+  $('#uf').onchange = function () {
+    var inp = this, files = Array.prototype.slice.call(inp.files), list = $('#ul');
+    if (!files.length) return;
+    if (!$('#rm').value.trim()) { list.innerHTML = '<div class="msg err">이름을 먼저 입력해 주세요.</div>'; inp.value = ''; return; }
+    var info = function () { return { cls: $('#rc').value, no: $('#rn').value, name: $('#rm').value }; };
+    var row = function (f) { var d = document.createElement('div'); d.className = 'msg'; d.style.margin = '4px 0'; d.textContent = '올리는 중… ' + f.name; list.insertBefore(d, list.firstChild); return d; };
+    files.reduce(function (chain, f) {
+      return chain.then(function () {
+        var d = row(f);
+        if (f.size > 10 * 1024 * 1024) { d.className = 'msg err'; d.textContent = '너무 커요(10MB 이하만 가능): ' + f.name; return; }
+        return new Promise(function (res, rej) { var fr = new FileReader(); fr.onload = function () { res(String(fr.result).split(',')[1] || ''); }; fr.onerror = function () { rej(new Error('파일을 읽지 못했어요.')); }; fr.readAsDataURL(f); })
+          .then(function (b64) { return api('submitFile', Object.assign(info(), { fileName: f.name, mime: f.type, data: b64 })); })
+          .then(function () { d.className = 'msg ok'; d.textContent = '제출 완료! ' + f.name; })
+          .catch(function (e) { d.className = 'msg err'; d.textContent = f.name + ' — ' + e.message; });
+      });
+    }, Promise.resolve()).then(function () { inp.value = ''; });
   };
 }
 
