@@ -35,6 +35,7 @@ function doPost(e) {
       case 'ask':    out = ask_(b, user); break;
       case 'submit': out = submit_(b); break;
       case 'submitFile': out = submitFile_(b, user); break;
+      case 'submitWorksheet': out = submitWorksheet_(b, user); break;
       default: throw new Error('알 수 없는 요청');
     }
   } catch (err) {
@@ -259,4 +260,61 @@ function submitFile_(b, user) {
   append_('보고서', { date: today, cls: cls, no: no, name: name, title: '[파일] ' + title, link: url, status: ok ? (attached ? '노션 등록(파일 첨부)' : '노션 등록') : '노션 실패' });
   if (!ok) throw new Error('노션 등록 실패(' + res.getResponseCode() + '). 파일은 드라이브에 저장됐어요. 선생님께 알려 주세요.');
   return { ok: true, attached: attached };
+}
+
+/* ------------------------------ 학습지 안의 '제출하기' → 드라이브 저장 + 노션 자동 제출 ------------------------------ */
+
+function submitWorksheet_(b, user) {
+  const name = cleanName_(b.name, 20), cls = cleanName_(b.cls, 10), no = cleanName_(b.no, 5);
+  if (!name) throw new Error('이름을 알 수 없어요. 학교 입구에서 이름을 입력하고 들어와 주세요.');
+  const title = cleanName_(b.title, 80) || '학습지';
+  const lesson = String(b.lesson || '').slice(0, 150);
+  const html = String(b.html || '');
+  if (!html) throw new Error('제출할 내용이 없어요.');
+  if (html.length > 4000000) throw new Error('학습지가 너무 커서 제출할 수 없어요.');
+  const answers = (Array.isArray(b.answers) ? b.answers : []).slice(0, 150);
+
+  const cache = CacheService.getScriptCache(), ck = 'up_' + user.uid;
+  const used = Number(cache.get(ck) || 0);
+  if (used >= CFG.FILE_LIMIT_PER_10MIN) throw new Error('잠시 후에 다시 제출해 주세요.');
+  cache.put(ck, String(used + 1), 600);
+
+  const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+  const stamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'MMdd_HHmmss');
+  const fname = [cls, no, name, title, stamp].filter(String).join('_') + '.html';
+  const file = folder_().createFile(Utilities.newBlob(html, 'text/html', fname));
+  const url = file.getUrl();
+
+  const token = PropertiesService.getScriptProperties().getProperty('NOTION_TOKEN');
+  if (!token) throw new Error('NOTION_TOKEN이 설정되지 않았습니다.');
+  const props = {
+    '학생 이름': { title: [{ text: { content: name } }] },
+    '학년·반': { rich_text: [{ text: { content: cls } }] },
+    '과제명': { rich_text: [{ text: { content: (title + ' (학습지)').slice(0, 200) } }] },
+    '제출 링크': { url: url },
+    '제출일': { date: { start: today } },
+    '확인 상태': { status: { name: '제출 완료' } }
+  };
+  if (no !== '' && !isNaN(Number(no))) props['번호'] = { number: Number(no) };
+
+  // 노션 페이지 안에 학생의 답안을 그대로 적어서, 파일을 열지 않고도 바로 볼 수 있게 함
+  const txt = function (t) { return [{ type: 'text', text: { content: String(t).slice(0, 1900) } }]; };
+  const children = [];
+  if (lesson) children.push({ object: 'block', type: 'paragraph', paragraph: { rich_text: txt('수업: ' + lesson) } });
+  children.push({ object: 'block', type: 'heading_3', heading_3: { rich_text: txt('제출 답안 (' + answers.length + '칸)') } });
+  if (!answers.length) children.push({ object: 'block', type: 'paragraph', paragraph: { rich_text: txt('(쓴 답안이 없어요)') } });
+  answers.slice(0, 90).forEach(function (x) {
+    children.push({ object: 'block', type: 'bulleted_list_item', bulleted_list_item: { rich_text: txt(String(x.q || '').slice(0, 60) + ' → ' + String(x.a || '')) } });
+  });
+
+  const res = UrlFetchApp.fetch('https://api.notion.com/v1/pages', {
+    method: 'post', contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + token, 'Notion-Version': '2022-06-28' },
+    payload: JSON.stringify({ parent: { database_id: CFG.NOTION_DB_ID }, properties: props, children: children }), muteHttpExceptions: true
+  });
+  const ok = res.getResponseCode() === 200;
+  const summary = answers.map(function (x) { return String(x.q || '').slice(0, 30) + ': ' + String(x.a || '').slice(0, 60); }).join(' | ');
+  append_('보고서', { date: today, cls: cls, no: no, name: name, title: '[학습지] ' + title, body: summary, link: url, status: ok ? '노션 등록' : '노션 실패' });
+  if (!ok) throw new Error('노션 등록 실패(' + res.getResponseCode() + '). 답안은 드라이브에 저장됐어요. 선생님께 알려 주세요.');
+  return { ok: true };
 }
