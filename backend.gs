@@ -13,7 +13,10 @@ const CFG = {
   TEACHER_EMAIL: 'teacher@sojeong.kr',          // index.html 의 TEACHER_EMAIL 과 같게
   GEMINI_MODEL: 'gemini-3.6-flash',
   NOTION_DB_ID: '840e81aa88cf4c72b6199367471452d1',
-  AI_COOLDOWN_SEC: 5
+  AI_COOLDOWN_SEC: 5,
+  DRIVE_FOLDER_NAME: '소정샘 역사 학습지 제출',   // 올린 파일이 저장될 내 드라이브 폴더(없으면 자동 생성)
+  FILE_MAX_MB: 10,                                // 파일 하나당 최대 크기
+  FILE_LIMIT_PER_10MIN: 30                        // 학생 한 명이 10분 동안 올릴 수 있는 파일 수
 };
 const HEADERS = ['순번', '일시', '구분', '수업일', '학반', '번호', '이름', '제목', '내용', '링크', '부가(JSON)', '상태'];
 const STUDENT_LOG = ['입장'];
@@ -31,6 +34,7 @@ function doPost(e) {
       case 'log':    out = log_(b, teacher); break;
       case 'ask':    out = ask_(b, user); break;
       case 'submit': out = submit_(b); break;
+      case 'submitFile': out = submitFile_(b, user); break;
       default: throw new Error('알 수 없는 요청');
     }
   } catch (err) {
@@ -60,7 +64,7 @@ function verify_(idToken) {
 
 /* ------------------------------ 시트 ------------------------------ */
 
-function setup() { sheet_(); return '완료'; }
+function setup() { sheet_(); folder_(); return '완료 (시트와 드라이브 폴더 준비됨)'; }
 
 function sheet_() {
   const ss = SpreadsheetApp.openById(CFG.SHEET_ID);
@@ -176,4 +180,83 @@ function submit_(b) {
   append_('보고서', { date: today, cls: b.cls, no: b.no, name: name, title: title, link: link, status: ok ? '노션 등록' : '노션 실패' });
   if (!ok) throw new Error('노션 등록 실패(' + res.getResponseCode() + '). 선생님께 알려주세요.');
   return { ok: true };
+}
+
+/* ------------------------------ 학습지 파일 → 드라이브 저장 + 노션 자동 제출 ------------------------------ */
+
+// 노션이 첨부 파일로 받아 주는 종류 (그 밖의 파일은 드라이브 링크로만 제출됩니다)
+const NOTION_FILE_TYPES = {
+  pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp',
+  txt: 'text/plain', md: 'text/markdown', json: 'application/json',
+  doc: 'application/msword', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint', pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+};
+
+function folder_() {
+  const it = DriveApp.getFoldersByName(CFG.DRIVE_FOLDER_NAME);
+  return it.hasNext() ? it.next() : DriveApp.createFolder(CFG.DRIVE_FOLDER_NAME);
+}
+function cleanName_(v, max) { return String(v || '').replace(/[\\/:*?"<>|\r\n\t]/g, '').trim().slice(0, max || 40); }
+
+function submitFile_(b, user) {
+  const name = cleanName_(b.name, 20), cls = cleanName_(b.cls, 10), no = cleanName_(b.no, 5);
+  if (!name) throw new Error('이름을 입력하세요.');
+  const orig = cleanName_(b.fileName, 80) || '학습지';
+  const ext = (orig.indexOf('.') >= 0 ? orig.split('.').pop() : '').toLowerCase().slice(0, 8);
+  const base = ext ? orig.slice(0, orig.length - ext.length - 1) : orig;
+  if (!b.data) throw new Error('파일 내용이 없어요.');
+
+  const cache = CacheService.getScriptCache(), ck = 'up_' + user.uid;
+  const used = Number(cache.get(ck) || 0);
+  if (used >= CFG.FILE_LIMIT_PER_10MIN) throw new Error('잠시 후에 다시 올려 주세요. (10분에 ' + CFG.FILE_LIMIT_PER_10MIN + '개까지 올릴 수 있어요)');
+  cache.put(ck, String(used + 1), 600);
+
+  const bytes = Utilities.base64Decode(String(b.data));
+  if (bytes.length > CFG.FILE_MAX_MB * 1024 * 1024) throw new Error('파일이 너무 커요. ' + CFG.FILE_MAX_MB + 'MB 이하로 올려 주세요.');
+
+  const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+  const stamp = Utilities.formatDate(new Date(), 'Asia/Seoul', 'MMdd_HHmmss');
+  const fname = [cls, no, name, base, stamp].filter(String).join('_') + (ext ? '.' + ext : '');
+  const mime = NOTION_FILE_TYPES[ext] || String(b.mime || '').slice(0, 80) || 'application/octet-stream';
+  const blob = Utilities.newBlob(bytes, mime, fname);
+  const file = folder_().createFile(blob);
+  const url = file.getUrl();
+
+  const token = PropertiesService.getScriptProperties().getProperty('NOTION_TOKEN');
+  if (!token) throw new Error('NOTION_TOKEN이 설정되지 않았습니다.');
+  const title = String(b.title || '').trim().slice(0, 200) || base;
+  const props = {
+    '학생 이름': { title: [{ text: { content: name } }] },
+    '학년·반': { rich_text: [{ text: { content: cls } }] },
+    '과제명': { rich_text: [{ text: { content: title } }] },
+    '제출 링크': { url: url },
+    '제출일': { date: { start: today } },
+    '확인 상태': { status: { name: '제출 완료' } }
+  };
+  if (no !== '' && !isNaN(Number(no))) props['번호'] = { number: Number(no) };
+
+  // 노션이 받아 주는 종류의 파일이면 '제출 파일'에도 첨부 (실패해도 링크로는 제출됩니다)
+  let attached = false;
+  if (NOTION_FILE_TYPES[ext]) {
+    try {
+      const h = { Authorization: 'Bearer ' + token, 'Notion-Version': '2022-06-28' };
+      const r1 = UrlFetchApp.fetch('https://api.notion.com/v1/file_uploads', { method: 'post', contentType: 'application/json', headers: h, payload: JSON.stringify({ filename: fname, content_type: mime }), muteHttpExceptions: true });
+      if (r1.getResponseCode() === 200) {
+        const fid = JSON.parse(r1.getContentText()).id;
+        const r2 = UrlFetchApp.fetch('https://api.notion.com/v1/file_uploads/' + fid + '/send', { method: 'post', headers: h, payload: { file: blob }, muteHttpExceptions: true });
+        if (r2.getResponseCode() === 200) { props['제출 파일'] = { files: [{ type: 'file_upload', file_upload: { id: fid }, name: fname }] }; attached = true; }
+      }
+    } catch (e) { /* 첨부는 건너뛰고 링크만 제출 */ }
+  }
+
+  const res = UrlFetchApp.fetch('https://api.notion.com/v1/pages', {
+    method: 'post', contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + token, 'Notion-Version': '2022-06-28' },
+    payload: JSON.stringify({ parent: { database_id: CFG.NOTION_DB_ID }, properties: props }), muteHttpExceptions: true
+  });
+  const ok = res.getResponseCode() === 200;
+  append_('보고서', { date: today, cls: cls, no: no, name: name, title: '[파일] ' + title, link: url, status: ok ? (attached ? '노션 등록(파일 첨부)' : '노션 등록') : '노션 실패' });
+  if (!ok) throw new Error('노션 등록 실패(' + res.getResponseCode() + '). 파일은 드라이브에 저장됐어요. 선생님께 알려 주세요.');
+  return { ok: true, attached: attached };
 }
