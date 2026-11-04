@@ -8,7 +8,7 @@ on:
       - '.github/workflows/android.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   apk:
@@ -31,3 +31,12 @@ jobs:
         with:
           name: sojeong-history-apk
           path: sojeong-history.apk
+      - name: Publish release (apk-latest)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete apk-latest --cleanup-tag --yes || true
+          gh release create apk-latest sojeong-history.apk \
+            --title "소정샘 역사 앱 (Android APK)" \
+            --notes "안드로이드용 설치 파일입니다. sojeong-history.apk 를 받아 설치하세요." \
+            --latest=false
